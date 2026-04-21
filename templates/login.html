@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BulkMail Pro — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --surface: #111318;
+    --border: #1e2330;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --success: #22c984;
+    --danger: #f7506e;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  /* animated bg orbs */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    animation: float 8s ease-in-out infinite alternate;
+  }
+  body::before {
+    width: 500px; height: 500px;
+    background: var(--accent);
+    top: -100px; left: -100px;
+  }
+  body::after {
+    width: 400px; height: 400px;
+    background: var(--accent2);
+    bottom: -80px; right: -80px;
+    animation-delay: -4s;
+  }
+  @keyframes float { from { transform: translate(0,0); } to { transform: translate(30px, 20px); } }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 44px 40px;
+    width: 420px;
+    max-width: 95vw;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.7rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .tagline {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 36px;
+  }
+  label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  input {
+    width: 100%;
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 20px;
+  }
+  input:focus { border-color: var(--accent); }
+  .btn-login {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 13px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+  }
+  .btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
+  .flash {
+    background: rgba(247,80,110,0.1);
+    border: 1px solid rgba(247,80,110,0.3);
+    border-radius: 8px;
+    color: var(--danger);
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+  }
+  .footer-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 28px;
+  }
+  .footer-note a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="logo">BulkMail Pro</div>
+  <div class="tagline">Shreedeep Solutions — Staff Portal</div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash">⚠ {{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" action="/login">
+    <label>Username</label>
+    <input type="text" name="username" placeholder="Enter your username" autocomplete="username" required>
+    <label>Password</label>
+    <input type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+    <button type="submit" class="btn-login">Sign In →</button>
+  </form>
+
+  <div class="footer-note">
+    &copy; {{ 2025 }} Shreedeep Solutions &nbsp;·&nbsp;
+    <a href="https://www.shreedeepsolutions.com" target="_blank">shreedeepsolutions.com</a>
+  </div>
+</div>
+</body>
+</html>

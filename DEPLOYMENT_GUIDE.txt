@@ -1,0 +1,116 @@
+# BulkMail Pro — Deployment Guide
+# bulkemail.shreedeepsolutions.com on Fly.io (Free Forever)
+
+============================================================
+STEP 1: Install Fly.io CLI
+============================================================
+Windows: Open PowerShell and run:
+  powershell -ExecutionPolicy Bypass -Command "iwr https://fly.io/install.ps1 -useb | iex"
+
+After install, restart your terminal.
+
+============================================================
+STEP 2: Create a FREE Fly.io account
+============================================================
+1. Go to https://fly.io
+2. Sign up (no credit card needed for free tier)
+3. In your terminal, run:
+   fly auth login
+   (it opens your browser to log in)
+
+============================================================
+STEP 3: Deploy the app
+============================================================
+1. Open terminal/Command Prompt
+2. Navigate to the bulkmail_pro folder:
+   cd path\to\bulkmail_pro
+
+3. Run:
+   fly launch --name bulkmail-shreedeep --region bom --no-deploy
+
+4. When asked "Would you like to set up a Postgresql database?" → NO
+   When asked "Would you like to set up an Upstash Redis database?" → NO
+
+5. Create persistent storage for the database:
+   fly volumes create bulkmail_data --size 1 --region bom
+
+6. Set a secret key (copy-paste this exactly, changing the value):
+   fly secrets set SECRET_KEY="your-random-secret-key-change-this-123456"
+
+7. Deploy:
+   fly deploy
+
+8. Check it's running:
+   fly status
+
+============================================================
+STEP 4: Connect your Namecheap domain
+============================================================
+1. Get your Fly.io app's IP:
+   fly ips allocate-v4
+
+   Note the IP address shown (e.g. 123.45.67.89)
+
+2. Log in to Namecheap → Domain List → shreedeepsolutions.com → Manage
+3. Click "Advanced DNS"
+4. Add a new record:
+   Type:  A Record
+   Host:  bulkemail
+   Value: (the IP from step 1)
+   TTL:   Automatic
+
+5. Wait 5-30 minutes for DNS to propagate
+
+6. Add the custom domain to Fly.io:
+   fly certs add bulkemail.shreedeepsolutions.com
+
+7. Fly.io automatically issues a FREE SSL certificate (HTTPS)
+
+============================================================
+STEP 5: First Login
+============================================================
+1. Go to https://bulkemail.shreedeepsolutions.com
+2. Login with:
+   Username: admin
+   Password: Admin@1234
+
+3. ⚠️ IMMEDIATELY go to Admin → My Password → change it!
+
+4. Go to Admin → Gmail Settings → enter your Gmail + App Password
+
+============================================================
+STEP 6: Add Staff Users
+============================================================
+1. Go to Admin Panel → Manage Users
+2. Click "Add New User"
+3. Fill in their name, username, password, role → Add
+4. Share their username & password with them privately
+5. They log in at https://bulkemail.shreedeepsolutions.com
+
+============================================================
+UPDATING THE APP IN FUTURE
+============================================================
+If you make changes to the code:
+1. Open terminal in the bulkmail_pro folder
+2. Run: fly deploy
+That's it — zero downtime deploy.
+
+============================================================
+USEFUL FLY.IO COMMANDS
+============================================================
+fly status          → Check if app is running
+fly logs            → See live logs / errors
+fly deploy          → Redeploy after code changes
+fly open            → Open app in browser
+fly ssh console     → SSH into the server
+
+============================================================
+FREE TIER LIMITS (Fly.io)
+============================================================
+✅ 3 shared-cpu VMs free
+✅ 160GB outbound data/month free
+✅ 3GB persistent storage free
+✅ Custom domains + SSL free
+✅ Always-on (no sleeping)
+
+This app uses well within all free limits.

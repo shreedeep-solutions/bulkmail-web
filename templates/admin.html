@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — BulkMail Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f14; --surface:#151820; --surface2:#1c2030; --border:#252a38;
+    --accent:#4f8ef7; --accent2:#7c5cfc; --success:#22c984; --warn:#f5a623;
+    --danger:#f7506e; --text:#e8eaf0; --muted:#6b7280;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+  /* NAV */
+  nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;}
+  .nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-right{display:flex;align-items:center;gap:14px;}
+  .nav-badge{background:rgba(79,142,247,0.15);color:var(--accent);border-radius:20px;padding:4px 12px;font-size:0.78rem;font-family:'DM Mono',monospace;}
+  .nav-link{color:var(--muted);font-size:0.85rem;text-decoration:none;transition:color 0.2s;}
+  .nav-link:hover{color:var(--text);}
+
+  /* LAYOUT */
+  .page{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 58px);}
+  aside{background:var(--surface);border-right:1px solid var(--border);padding:24px 0;}
+  .aside-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:0 20px;margin-bottom:8px;margin-top:20px;}
+  .aside-link{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--muted);text-decoration:none;font-size:0.88rem;transition:all 0.15s;cursor:pointer;border:none;background:none;width:100%;}
+  .aside-link:hover,.aside-link.active{color:var(--text);background:rgba(79,142,247,0.08);}
+  .aside-link.active{border-right:2px solid var(--accent);}
+  main{padding:28px;overflow-y:auto;}
+
+  /* SECTIONS */
+  .section{display:none;} .section.active{display:block;}
+  .page-title{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:6px;}
+  .page-sub{color:var(--muted);font-size:0.88rem;margin-bottom:24px;}
+
+  /* CARDS */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;}
+  .card-title{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:16px;}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center;}
+  .stat-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;}
+  .stat-label{font-size:0.78rem;color:var(--muted);margin-top:4px;}
+  .stat.blue .stat-num{color:var(--accent);}
+  .stat.green .stat-num{color:var(--success);}
+  .stat.red .stat-num{color:var(--danger);}
+
+  /* TABLE */
+  .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:0.86rem;}
+  thead th{background:var(--surface2);color:var(--muted);font-family:'Syne',sans-serif;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;padding:11px 14px;text-align:left;white-space:nowrap;}
+  tbody tr{border-top:1px solid var(--border);transition:background 0.12s;}
+  tbody tr:hover{background:rgba(79,142,247,0.04);}
+  tbody td{padding:11px 14px;vertical-align:middle;}
+  .mono{font-family:'DM Mono',monospace;font-size:0.82rem;}
+  .role-badge{border-radius:20px;padding:3px 10px;font-size:0.75rem;font-family:'DM Mono',monospace;}
+  .role-admin{background:rgba(124,92,252,0.15);color:var(--accent2);}
+  .role-staff{background:rgba(79,142,247,0.12);color:var(--accent);}
+  .status-active{color:var(--success);}
+  .status-inactive{color:var(--danger);}
+
+  /* FORMS */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+  @media(max-width:600px){.form-grid{grid-template-columns:1fr;}.page{grid-template-columns:1fr;} aside{display:none;}}
+  .form-group label{display:block;font-size:0.8rem;color:var(--muted);margin-bottom:6px;}
+  .form-group input, .form-group select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:9px 13px;outline:none;transition:border-color 0.2s;}
+  .form-group input:focus, .form-group select:focus{border-color:var(--accent);}
+  select option{background:var(--surface2);}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.84rem;font-weight:500;padding:8px 16px;transition:all 0.18s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:#3a7de8;}
+  .btn-success{background:var(--success);color:#0d1a12;} .btn-success:hover{filter:brightness(0.9);}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);} .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger);} .btn-danger:hover{background:var(--danger);color:#fff;}
+  .btn-warn{background:transparent;color:var(--warn);border:1px solid var(--warn);} .btn-warn:hover{background:var(--warn);color:#000;}
+  .btn-sm{padding:5px 11px;font-size:0.78rem;}
+  .flex-gap{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:24px;right:24px;border-radius:10px;padding:12px 20px;font-size:0.88rem;z-index:9999;display:none;max-width:320px;}
+
+  /* LOG TABLE STATUS */
+  .log-success{color:var(--success);} .log-failed{color:var(--danger);}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:440px;max-width:95vw;overflow:hidden;}
+  .modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .modal-header h3{font-family:'Syne',sans-serif;font-size:1rem;}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;}
+  .modal-body{padding:22px;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+  /* GMAIL SECTION */
+  .gmail-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .gmail-row label{font-size:0.82rem;color:var(--muted);min-width:120px;}
+  .gmail-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;padding:9px 13px;outline:none;}
+  .gmail-row input:focus{border-color:var(--accent);}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">BulkMail Pro</span>
+  <div class="nav-right">
+    <span class="nav-badge">👑 Admin: {{ current_user.display_name }}</span>
+    <a href="/dashboard" class="nav-link">📧 Send Emails</a>
+    <a href="/logout" class="nav-link">Sign Out</a>
+  </div>
+</nav>
+
+<div class="page">
+  <aside>
+    <div class="aside-label">Admin</div>
+    <button class="aside-link active" onclick="showSection('overview', this)">📊 Overview</button>
+    <button class="aside-link" onclick="showSection('users', this)">👥 Manage Users</button>
+    <button class="aside-link" onclick="showSection('logs', this)">📋 Send History</button>
+    <div class="aside-label">Settings</div>
+    <button class="aside-link" onclick="showSection('gmail', this)">✉ Gmail Settings</button>
+    <button class="aside-link" onclick="showSection('password', this)">🔑 My Password</button>
+  </aside>
+
+  <main>
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="section-overview">
+      <div class="page-title">Overview</div>
+      <div class="page-sub">System summary and quick stats</div>
+      <div class="stats-row">
+        <div class="stat blue"><div class="stat-num">{{ users|length }}</div><div class="stat-label">Total Users</div></div>
+        <div class="stat green"><div class="stat-num">{{ users|selectattr('active')|list|length }}</div><div class="stat-label">Active Users</div></div>
+        <div class="stat blue"><div class="stat-num">{{ logs|selectattr('status','eq','success')|list|length }}</div><div class="stat-label">Emails Sent</div></div>
+        <div class="stat red"><div class="stat-num">{{ logs|selectattr('status','eq','failed')|list|length }}</div><div class="stat-label">Failed</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Recent Activity (last 10)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Recipient</th><th>Subject</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody>
+            {% for log in logs[:10] %}
+            <tr>
+              <td>{{ log.user.display_name }}</td>
+              <td class="mono">{{ log.recipient }}</td>
+              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ log.subject }}</td>
+              <td class="log-{{ log.status }}">{{ '✅' if log.status=='success' else '❌' }} {{ log.status }}</td>
+              <td class="mono" style="white-space:nowrap;">{{ log.sent_at.strftime('%d %b %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No activity yet</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section" id="section-users">
+      <div class="page-title">Manage Users</div>
+      <div class="page-sub">Add, activate/deactivate, or remove staff accounts</div>
+
+      <div class="card">
+        <div class="card-title">Add New User</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Display Name</label><input type="text" id="new-display" placeholder="e.g. Rahul Sharma"></div>
+          <div class="form-group"><label>Username</label><input type="text" id="new-username" placeholder="e.g. rahul.sharma"></div>
+          <div class="form-group"><label>Password</label><input type="password" id="new-password" placeholder="Min 6 characters"></div>
+          <div class="form-group"><label>Role</label>
+            <select id="new-role">
+              <option value="staff">Staff</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-success" onclick="addUser()">+ Add User</button>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);"><div class="card-title" style="margin:0;">All Users</div></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody">
+            {% for u in users %}
+            <tr id="user-row-{{ u.id }}">
+              <td>{{ u.display_name }}</td>
+              <td class="mono">{{ u.username }}</td>
+              <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+              <td class="{{ 'status-active' if u.active else 'status-inactive' }}" id="user-status-{{ u.id }}">{{ '● Active' if u.active else '○ Inactive' }}</td>
+              <td class="mono">{{ u.last_login.strftime('%d %b %H:%M') if u.last_login else '—' }}</td>
+              <td>
+                <div class="flex-gap">
+                  <button class="btn btn-warn btn-sm" onclick="openResetModal({{ u.id }}, '{{ u.display_name }}')">Reset PW</button>
+                  <button class="btn btn-ghost btn-sm" onclick="toggleUser({{ u.id }})">{{ 'Deactivate' if u.active else 'Activate' }}</button>
+                  {% if u.id != current_user.id %}
+                  <button class="btn btn-danger btn-sm" onclick="deleteUser({{ u.id }}, '{{ u.display_name }}')">Delete</button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="section" id="section-logs">
+      <div class="page-title">Send History</div>
+      <div class="page-sub">All email send attempts (last 100)</div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Recipient</th><th>Subject</th><th>Attachments</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log.user.display_name }}</td>
+              <td class="mono">{{ log.recipient }}</td>
+              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ log.subject }}">{{ log.subject }}</td>
+              <td class="mono" style="color:var(--muted);font-size:0.78rem;">{{ log.files }}</td>
+              <td class="log-{{ log.status }}">{{ '✅' if log.status=='success' else '❌' }}</td>
+              <td class="mono" style="white-space:nowrap;">{{ log.sent_at.strftime('%d %b %Y %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No logs yet</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GMAIL -->
+    <div class="section" id="section-gmail">
+      <div class="page-title">Gmail Settings</div>
+      <div class="page-sub">Configure the Gmail account used for all outgoing emails</div>
+      <div class="card">
+        <div class="gmail-row"><label>Gmail Address</label><input type="email" id="cfg-gmail" value="{{ cfg.gmail if cfg else '' }}" placeholder="yourname@gmail.com"></div>
+        <div class="gmail-row"><label>App Password</label><input type="password" id="cfg-pass" value="{{ cfg.app_password if cfg else '' }}" placeholder="16-character app password"></div>
+        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">Generate at myaccount.google.com → Security → App Passwords (2-Step Verification must be ON)</p>
+        <div class="flex-gap">
+          <button class="btn btn-success" onclick="saveGmail()">💾 Save</button>
+          <button class="btn btn-ghost" onclick="testGmail()">🔌 Test Login</button>
+          <span id="gmail-test-result"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY PASSWORD -->
+    <div class="section" id="section-password">
+      <div class="page-title">Change My Password</div>
+      <div class="page-sub">Update your own login password</div>
+      <div class="card" style="max-width:420px;">
+        <div class="form-group" style="margin-bottom:14px;"><label>Current Password</label><input type="password" id="old-pw" placeholder="Current password"></div>
+        <div class="form-group" style="margin-bottom:14px;"><label>New Password</label><input type="password" id="new-pw" placeholder="Min 6 characters"></div>
+        <div class="form-group" style="margin-bottom:20px;"><label>Confirm New Password</label><input type="password" id="confirm-pw" placeholder="Repeat new password"></div>
+        <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Reset PW Modal -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <div class="modal-header"><h3>Reset Password</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:16px;">Set new password for <strong id="reset-name" style="color:var(--text);"></strong></p>
+      <div class="form-group"><label>New Password</label><input type="password" id="reset-pw" placeholder="Min 6 characters"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-warn" onclick="doReset()">Reset Password</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let resetUserId = null;
+
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.aside-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function addUser() {
+  const display  = document.getElementById('new-display').value.trim();
+  const username = document.getElementById('new-username').value.trim();
+  const password = document.getElementById('new-password').value;
+  const role     = document.getElementById('new-role').value;
+  if (!display || !username || !password) { toast('Fill all fields', 'warn'); return; }
+  const r = await post('/admin/add_user', {display_name: display, username, password, role});
+  if (r.ok) {
+    toast(r.message, 'success');
+    setTimeout(() => location.reload(), 800);
+  } else { toast(r.message, 'error'); }
+}
+
+async function toggleUser(uid) {
+  const r = await post('/admin/toggle_user/' + uid, {});
+  if (r.ok) {
+    const td = document.getElementById('user-status-' + uid);
+    td.className = r.active ? 'status-active' : 'status-inactive';
+    td.textContent = r.active ? '● Active' : '○ Inactive';
+    toast('User updated', 'success');
+    setTimeout(() => location.reload(), 600);
+  }
+}
+
+async function deleteUser(uid, name) {
+  if (!confirm(`Permanently delete user "${name}"? This also deletes their send history.`)) return;
+  const r = await post('/admin/delete_user/' + uid, {});
+  if (r.ok) { toast('User deleted', 'success'); setTimeout(() => location.reload(), 600); }
+  else toast(r.message, 'error');
+}
+
+function openResetModal(uid, name) {
+  resetUserId = uid;
+  document.getElementById('reset-name').textContent = name;
+  document.getElementById('reset-pw').value = '';
+  document.getElementById('reset-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('reset-modal').classList.remove('open'); }
+
+async function doReset() {
+  const pw = document.getElementById('reset-pw').value;
+  const r = await post('/admin/reset_password/' + resetUserId, {password: pw});
+  if (r.ok) { toast('Password reset!', 'success'); closeModal(); }
+  else toast(r.message, 'error');
+}
+
+async function saveGmail() {
+  const gmail = document.getElementById('cfg-gmail').value.trim();
+  const pass  = document.getElementById('cfg-pass').value.trim();
+  const r = await post('/admin/save_gmail', {gmail, app_password: pass});
+  if (r.ok) toast('Gmail settings saved!', 'success');
+}
+
+async function testGmail() {
+  const el = document.getElementById('gmail-test-result');
+  el.innerHTML = '<span style="color:var(--muted)">Testing...</span>';
+  const r = await post('/admin/test_gmail', {});
+  el.innerHTML = r.ok
+    ? '<span style="color:var(--success)">✅ ' + r.message + '</span>'
+    : '<span style="color:var(--danger)">❌ ' + r.message + '</span>';
+}
+
+async function changePassword() {
+  const old_pw = document.getElementById('old-pw').value;
+  const new_pw = document.getElementById('new-pw').value;
+  const conf   = document.getElementById('confirm-pw').value;
+  if (new_pw !== conf) { toast('Passwords do not match', 'error'); return; }
+  const r = await post('/api/change_password', {old_password: old_pw, new_password: new_pw});
+  if (r.ok) { toast('Password updated!', 'success'); document.getElementById('old-pw').value=''; document.getElementById('new-pw').value=''; document.getElementById('confirm-pw').value=''; }
+  else toast(r.message, 'error');
+}
+
+async function post(url, data) {
+  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  return r.json();
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  const colors = {success:'var(--success)',error:'var(--danger)',warn:'var(--warn)',info:'var(--accent)'};
+  t.style.cssText = `background:var(--surface);border:1px solid ${colors[type]};color:${colors[type]};display:block;box-shadow:0 8px 24px rgba(0,0,0,0.4);`;
+  t.textContent = msg;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>

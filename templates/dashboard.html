@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BulkMail Pro — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0f14;--surface:#151820;--surface2:#1c2030;--border:#252a38;--accent:#4f8ef7;--accent2:#7c5cfc;--success:#22c984;--warn:#f5a623;--danger:#f7506e;--text:#e8eaf0;--muted:#6b7280;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:var(--display);font-weight:800;font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-user{font-size:0.83rem;color:var(--muted);}
+.nav-link{color:var(--muted);font-size:0.82rem;text-decoration:none;transition:color 0.2s;padding:6px 10px;border-radius:6px;}
+.nav-link:hover{color:var(--text);background:var(--surface2);}
+
+/* TABS */
+.tabs{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+.tab-btn{background:none;border:none;cursor:pointer;font-family:var(--sans);font-size:0.83rem;font-weight:500;color:var(--muted);padding:13px 18px;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* MAIN */
+main{padding:24px;max-width:1400px;margin:0 auto;}
+.tab-panel{display:none;} .tab-panel.active{display:block;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px;}
+.card-title{font-family:var(--display);font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+
+/* DROP ZONE */
+#drop-zone{border:2px dashed var(--border);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface2);}
+#drop-zone:hover,#drop-zone.drag-over{border-color:var(--accent);background:rgba(79,142,247,0.06);}
+#drop-zone.drag-over{transform:scale(1.01);}
+.drop-icon{font-size:2.6rem;margin-bottom:10px;}
+.drop-title{font-family:var(--display);font-size:1rem;font-weight:700;margin-bottom:5px;}
+.drop-sub{color:var(--muted);font-size:0.83rem;margin-bottom:12px;}
+.drop-hint{margin-top:12px;font-size:0.76rem;color:var(--muted);}
+
+/* COLUMN MANAGER */
+.col-manager{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.col-tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 14px;font-size:0.8rem;display:flex;align-items:center;gap:8px;}
+.col-tag.fixed{color:var(--muted);}
+.col-tag.custom{color:var(--accent);border-color:rgba(79,142,247,0.3);}
+.col-tag button{background:none;border:none;cursor:pointer;color:var(--danger);font-size:1rem;line-height:1;padding:0;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
+table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+thead th{background:var(--surface2);color:var(--muted);font-family:var(--display);font-size:0.72rem;font-weight:700;text-transform:uppercase;padding:10px 13px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.12s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:rgba(79,142,247,0.04);}
+tbody td{padding:7px 13px;vertical-align:middle;}
+tbody td input{width:100%;background:transparent;border:none;border-radius:6px;color:var(--text);font-family:var(--sans);font-size:0.85rem;padding:5px 7px;outline:none;transition:background 0.15s;min-width:110px;}
+tbody td input:focus{background:var(--surface2);}
+.file-cell{font-family:var(--mono);font-size:0.8rem;color:var(--accent);white-space:nowrap;}
+.empty-state{text-align:center;padding:44px;color:var(--muted);}
+.empty-state .big-icon{font-size:2.8rem;margin-bottom:10px;}
+
+/* PLACEHOLDER BAR */
+.ph-bar{background:linear-gradient(135deg,rgba(79,142,247,0.07),rgba(124,92,252,0.07));border:1px solid rgba(79,142,247,0.18);border-radius:8px;padding:11px 14px;margin-bottom:14px;}
+.ph-label{font-size:0.77rem;color:var(--muted);margin-bottom:7px;}
+.ph-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.ph-chip{background:rgba(79,142,247,0.1);color:var(--accent);border-radius:5px;padding:3px 10px;font-family:var(--mono);font-size:0.8rem;cursor:pointer;transition:background 0.15s;}
+.ph-chip:hover{background:rgba(79,142,247,0.24);}
+
+/* FORM */
+.form-row{display:flex;align-items:center;gap:12px;margin-bottom:13px;flex-wrap:wrap;}
+.form-row label{font-size:0.82rem;color:var(--muted);min-width:80px;}
+input[type=text],input[type=email],textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:0.88rem;padding:9px 13px;outline:none;transition:border-color 0.2s;}
+input[type=text]:focus,input[type=email]:focus,textarea:focus{border-color:var(--accent);}
+textarea{width:100%;resize:vertical;min-height:170px;font-family:var(--mono);font-size:0.85rem;line-height:1.65;}
+.compose-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px;}
+@media(max-width:700px){.compose-grid{grid-template-columns:1fr;}}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:0.84rem;font-weight:500;padding:8px 16px;transition:all 0.18s;}
+.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:#3a7de8;transform:translateY(-1px);}
+.btn-success{background:var(--success);color:#0d1a12;}.btn-success:hover{filter:brightness(0.9);transform:translateY(-1px);}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger);}.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn-lg{padding:12px 26px;font-size:0.95rem;border-radius:10px;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;transform:none!important;}
+.flex-gap{display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+
+/* SEND STATS */
+.send-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:16px;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+.stat-num{font-family:var(--display);font-size:1.9rem;font-weight:800;}
+.stat-label{font-size:0.75rem;color:var(--muted);margin-top:3px;}
+.stat-box.total .stat-num{color:var(--text);}
+.stat-box.sent .stat-num{color:var(--success);}
+.stat-box.fail .stat-num{color:var(--danger);}
+.progress-wrap{height:5px;background:var(--border);border-radius:3px;margin-bottom:14px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width 0.4s ease;width:0%;}
+.log-box{background:#08090c;border:1px solid var(--border);border-radius:10px;padding:14px;height:300px;overflow-y:auto;font-family:var(--mono);font-size:0.81rem;line-height:1.8;}
+.log-line.success{color:var(--success);}.log-line.error{color:var(--danger);}.log-line.warn{color:var(--warn);}.log-line.info{color:var(--muted);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:660px;max-width:95vw;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;animation:popIn 0.2s ease;}
+@keyframes popIn{from{transform:scale(0.94);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-header h3{font-family:var(--display);font-size:1rem;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;}
+.modal-body{padding:18px 22px;overflow-y:auto;flex:1;}
+.pf-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+.pf-val{background:var(--surface2);border-radius:8px;padding:9px 13px;font-size:0.88rem;word-break:break-word;margin-bottom:13px;}
+.preview-body{white-space:pre-wrap;font-family:var(--mono);font-size:0.83rem;line-height:1.7;}
+.att-chip{background:rgba(34,201,132,0.1);color:var(--success);border:1px solid rgba(34,201,132,0.2);border-radius:6px;padding:3px 11px;font-family:var(--mono);font-size:0.78rem;display:inline-block;margin:3px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;right:22px;border-radius:10px;padding:11px 18px;font-size:0.86rem;z-index:9999;display:none;max-width:300px;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.hint{font-size:0.78rem;color:var(--muted);margin-top:4px;}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;padding:4px 10px;border-radius:20px;font-family:var(--mono);}
+.badge-success{background:#0d2e1f;color:var(--success);}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">BulkMail Pro</span>
+  <div class="nav-right">
+    <span class="nav-user">👤 {{ user.display_name }}</span>
+    {% if user.role == 'admin' %}<a href="/admin" class="nav-link">⚙ Admin</a>{% endif %}
+    <a href="/logout" class="nav-link">Sign Out</a>
+  </div>
+</nav>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('recipients',this)">📋 Recipients</button>
+  <button class="tab-btn" onclick="switchTab('compose',this)">✉ Compose</button>
+  <button class="tab-btn" onclick="switchTab('send',this)">🚀 Send</button>
+</div>
+
+<main>
+
+<!-- ══ TAB 1: RECIPIENTS ══ -->
+<div class="tab-panel active" id="tab-recipients">
+  <div class="card">
+    <div class="card-title">📁 Load PDF Files</div>
+    <div id="drop-zone">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Drag & Drop PDFs or a Folder here</div>
+      <div class="drop-sub">or choose manually</div>
+      <div class="flex-gap" style="justify-content:center;margin-top:10px;">
+        <button class="btn btn-primary" onclick="document.getElementById('pick-files').click()">Select PDF Files</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('pick-folder').click()">Select Folder</button>
+      </div>
+      <p class="drop-hint">Select individual PDFs or an entire folder — all PDFs are loaded automatically</p>
+    </div>
+    <input type="file" id="pick-files" accept=".pdf" multiple style="display:none" onchange="handleFilePick(event)">
+    <input type="file" id="pick-folder" webkitdirectory multiple style="display:none" onchange="handleFilePick(event)">
+    <div id="loaded-info" style="display:none;margin-top:12px;" class="badge badge-success"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧩 Manage Columns</div>
+    <div id="col-tags" class="col-manager"></div>
+    <div class="flex-gap">
+      <input type="text" id="new-col-name" placeholder="New column (e.g. Amount Due)" style="width:220px;">
+      <button class="btn btn-ghost" onclick="addColumn()">+ Add Column</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div class="card-title" style="margin:0;">📊 Recipients Table</div>
+      <div class="flex-gap">
+        <button class="btn btn-ghost" onclick="importCSV()">⬆ Import CSV</button>
+        <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-danger" onclick="clearTable()">✕ Clear</button>
+        <input type="file" id="import-file" accept=".csv" style="display:none" onchange="handleImport(event)">
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table id="recipients-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body">
+          <tr><td colspan="10" class="empty-state"><div class="big-icon">📂</div>Load PDF files to get started</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 2: COMPOSE ══ -->
+<div class="tab-panel" id="tab-compose">
+  <div class="card">
+    <div class="card-title">✉ Email Details</div>
+    <div class="form-row">
+      <label>Subject</label>
+      <input type="text" id="subject" placeholder="Maintenance Bill – {Flat_Unit_No_}" style="flex:1;min-width:200px;">
+    </div>
+    <div class="compose-grid" style="margin-top:10px;">
+      <div>
+        <div class="form-row"><label>CC</label><input type="text" id="cc" placeholder="manager@gmail.com" style="flex:1;"></div>
+        <p class="hint" style="margin-left:92px;">Optional, comma-separated</p>
+      </div>
+      <div>
+        <div class="form-row"><label>BCC</label><input type="text" id="bcc" placeholder="records@gmail.com" style="flex:1;"></div>
+        <p class="hint" style="margin-left:92px;">Optional, comma-separated</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧩 Placeholders <span style="font-size:0.72rem;color:var(--muted);font-weight:400;">(click to insert at cursor)</span></div>
+    <div class="ph-bar">
+      <div class="ph-label">Available placeholders for your columns:</div>
+      <div class="ph-chips" id="ph-chips"></div>
+    </div>
+    <label style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:8px;">Email Body</label>
+    <textarea id="body" placeholder="Dear {Recipient_Name},
+
+Please find attached the maintenance bill for Flat {Flat_Unit_No_}.
+
+Kindly clear the dues at the earliest.
+
+Regards,
+The Management"></textarea>
+  </div>
+</div>
+
+<!-- ══ TAB 3: SEND ══ -->
+<div class="tab-panel" id="tab-send">
+  <div class="card">
+    <div class="card-title">🚀 Send</div>
+    <p style="font-size:0.86rem;color:var(--muted);margin-bottom:16px;">Each unique email gets <strong style="color:var(--text)">one email</strong> with all matching PDFs attached.</p>
+    <div class="flex-gap">
+      <button class="btn btn-success btn-lg" id="send-btn" onclick="sendAll()">▶ Send All Emails</button>
+      <button class="btn btn-ghost" onclick="openPreview()">👁 Preview Selected Row</button>
+    </div>
+  </div>
+  <div class="send-stats">
+    <div class="stat-box total"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total</div></div>
+    <div class="stat-box sent"><div class="stat-num" id="stat-sent">0</div><div class="stat-label">Sent ✓</div></div>
+    <div class="stat-box fail"><div class="stat-num" id="stat-fail">0</div><div class="stat-label">Failed ✕</div></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+  <div class="log-box" id="log-box"><span class="log-line info">Send log will appear here...</span></div>
+</div>
+
+</main>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal">
+    <div class="modal-header"><h3>📧 Email Preview</h3><button class="modal-close" onclick="closePreview()">✕</button></div>
+    <div class="modal-body" id="preview-body"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── STATE ──
+let pdfFiles = [];
+let pdfFileObjects = {};
+let customCols = [];
+let tableData = [];
+let selectedRowIdx = -1;
+let pollInterval = null;
+let currentJobId = null;
+
+const FIXED_COLS = ['File Name','Email','Recipient Name','Flat/Unit No.'];
+const allCols = () => [...FIXED_COLS, ...customCols];
+const safeKey = s => s.replace(/[^a-zA-Z0-9_]/g,'_');
+
+// ── TABS ──
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── DROP ZONE ──
+function setupDropZone() {
+  const zone = document.getElementById('drop-zone');
+  zone.addEventListener('dragover', e=>{e.preventDefault();zone.classList.add('drag-over');});
+  zone.addEventListener('dragleave', e=>{if(!zone.contains(e.relatedTarget))zone.classList.remove('drag-over');});
+  zone.addEventListener('drop', async e=>{
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const files = await collectPDFs(e.dataTransfer);
+    loadFileObjects(files);
+  });
+}
+
+async function collectPDFs(dt) {
+  const files = [];
+  for (const item of [...dt.items]) {
+    if (item.kind !== 'file') continue;
+    const entry = item.webkitGetAsEntry?.();
+    if (entry?.isDirectory) await readDir(entry, files);
+    else { const f = item.getAsFile(); if(f?.name.toLowerCase().endsWith('.pdf')) files.push(f); }
+  }
+  return files;
+}
+
+function readDir(dir, files) {
+  return new Promise(res=>{
+    dir.createReader().readEntries(async entries=>{
+      for (const e of entries) {
+        if (e.isDirectory) await readDir(e, files);
+        else if (e.name.toLowerCase().endsWith('.pdf')) await new Promise(r=>e.file(f=>{files.push(f);r();}));
+      }
+      res();
+    });
+  });
+}
+
+function handleFilePick(event) {
+  const files = [...event.target.files].filter(f=>f.name.toLowerCase().endsWith('.pdf'));
+  loadFileObjects(files);
+  event.target.value='';
+}
+
+function loadFileObjects(files) {
+  if (!files.length){toast('No PDF files found','warn');return;}
+  files.sort((a,b)=>a.name.localeCompare(b.name));
+  pdfFileObjects={};
+  files.forEach(f=>{pdfFileObjects[f.name]=f;});
+  pdfFiles = Object.keys(pdfFileObjects);
+  rebuildTable();
+  const info = document.getElementById('loaded-info');
+  info.style.display='inline-flex';
+  info.textContent=`✅ ${pdfFiles.length} PDF(s) loaded`;
+  toast(pdfFiles.length+' PDFs loaded!','success');
+}
+
+// ── COLUMNS ──
+function renderColTags() {
+  const el = document.getElementById('col-tags');
+  el.innerHTML='';
+  FIXED_COLS.forEach(c=>{const t=document.createElement('div');t.className='col-tag fixed';t.textContent=c;el.appendChild(t);});
+  customCols.forEach((c,i)=>{const t=document.createElement('div');t.className='col-tag custom';t.innerHTML=c+`<button onclick="removeColumn(${i})">×</button>`;el.appendChild(t);});
+}
+
+function addColumn(){
+  const name=document.getElementById('new-col-name').value.trim();
+  if(!name){toast('Enter a column name','warn');return;}
+  if(allCols().includes(name)){toast('Column already exists','warn');return;}
+  customCols.push(name);
+  document.getElementById('new-col-name').value='';
+  rebuildTable(); updatePlaceholders();
+}
+
+function removeColumn(idx){customCols.splice(idx,1);rebuildTable();updatePlaceholders();}
+
+// ── TABLE ──
+function rebuildTable(){
+  const existing={};
+  tableData.forEach(r=>{existing[r['File Name']]=r;});
+  tableData=pdfFiles.map(fname=>{
+    const prev=existing[fname]||{};
+    const row={};
+    allCols().forEach(c=>{row[c]=prev[c]||'';});
+    row['File Name']=fname;
+    return row;
+  });
+  renderTable(); renderColTags(); updatePlaceholders();
+}
+
+function renderTable(){
+  const cols=allCols();
+  const head=document.getElementById('table-head');
+  const body=document.getElementById('table-body');
+  head.innerHTML='<tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'<th style="width:44px;"></th></tr>';
+  if(!tableData.length){
+    body.innerHTML=`<tr><td colspan="${cols.length+1}" class="empty-state"><div class="big-icon">📂</div>Load PDF files to get started</td></tr>`;
+    return;
+  }
+  body.innerHTML='';
+  tableData.forEach((row,ri)=>{
+    const tr=document.createElement('tr');
+    tr.onclick=()=>{selectedRowIdx=ri;document.querySelectorAll('tbody tr').forEach(r=>r.style.background='');tr.style.background='rgba(79,142,247,0.09)';};
+    cols.forEach((col,ci)=>{
+      const td=document.createElement('td');
+      if(ci===0){td.className='file-cell';td.textContent=row[col];}
+      else{const inp=document.createElement('input');inp.type='text';inp.value=row[col]||'';inp.placeholder=col;inp.oninput=e=>{tableData[ri][col]=e.target.value;};td.appendChild(inp);}
+      tr.appendChild(td);
+    });
+    const td2=document.createElement('td');
+    const pb=document.createElement('button');
+    pb.className='btn btn-ghost';pb.style.cssText='padding:4px 9px;font-size:0.75rem;';pb.textContent='👁';
+    pb.onclick=e=>{e.stopPropagation();selectedRowIdx=ri;openPreview();};
+    td2.appendChild(pb);tr.appendChild(td2);body.appendChild(tr);
+  });
+}
+
+function clearTable(){if(!confirm('Clear all data?'))return;tableData=[];pdfFiles=[];pdfFileObjects={};renderTable();}
+
+// ── IMPORT/EXPORT ──
+function importCSV(){document.getElementById('import-file').click();}
+async function handleImport(event){
+  const file=event.target.files[0]; if(!file)return;
+  const text=await file.text();
+  const lines=text.split('\n').filter(l=>l.trim());
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/"/g,''));
+  headers.forEach(h=>{if(!allCols().includes(h)&&h)customCols.push(h);});
+  rebuildTable();
+  lines.slice(1).forEach(line=>{
+    const vals=line.split(',').map(v=>v.trim().replace(/"/g,''));
+    const fname=vals[0];
+    const idx=tableData.findIndex(r=>r['File Name']===fname);
+    if(idx>=0)headers.forEach((h,i)=>{if(h)tableData[idx][h]=vals[i]||'';});
+  });
+  renderTable(); toast('Imported!','success'); event.target.value='';
+}
+function exportCSV(){
+  const cols=allCols();
+  let csv=cols.join(',')+'\n';
+  tableData.forEach(row=>{csv+=cols.map(c=>`"${(row[c]||'').replace(/"/g,'""')}"`).join(',')+'\n';});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='recipients.csv';a.click();
+}
+
+// ── PLACEHOLDERS ──
+function updatePlaceholders(){
+  const chips=document.getElementById('ph-chips');
+  chips.innerHTML=allCols().filter(c=>c!=='File Name').map(c=>{
+    const ph='{'+safeKey(c)+'}';
+    return `<span class="ph-chip" onclick="insertPh('${ph}')">${ph}</span>`;
+  }).join('');
+}
+function insertPh(ph){
+  const ta=document.getElementById('body');
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+ph+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+ph.length;
+  ta.focus();
+}
+
+// ── PREVIEW ──
+async function openPreview(){
+  if(selectedRowIdx<0||!tableData[selectedRowIdx]){toast('Click a row first','warn');return;}
+  const row=tableData[selectedRowIdx];
+  const rowSafe={};
+  Object.entries(row).forEach(([k,v])=>{rowSafe[safeKey(k)]=v;});
+  const r=await fetch('/api/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({row:rowSafe,subject:document.getElementById('subject').value,body:document.getElementById('body').value})});
+  const d=await r.json();
+  const email=row['Email']||'';
+  const pdfs=tableData.filter(r2=>r2['Email']===email&&r2['File Name']).map(r2=>r2['File Name']);
+  document.getElementById('preview-body').innerHTML=`
+    <div><div class="pf-label">To</div><div class="pf-val">${row['Email']||'—'}</div></div>
+    <div><div class="pf-label">Subject</div><div class="pf-val">${d.subject||'—'}</div></div>
+    ${document.getElementById('cc').value?`<div><div class="pf-label">CC</div><div class="pf-val">${document.getElementById('cc').value}</div></div>`:''}
+    <div><div class="pf-label">Body</div><div class="pf-val preview-body">${esc(d.body)}</div></div>
+    <div><div class="pf-label">Attachments (${pdfs.length})</div><div>${pdfs.map(p=>`<span class="att-chip">📎 ${p}</span>`).join('')||'<span style="color:var(--muted)">None</span>'}</div></div>
+  `;
+  document.getElementById('preview-modal').classList.add('open');
+}
+function closePreview(){document.getElementById('preview-modal').classList.remove('open');}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── SEND ──
+async function sendAll(){
+  const total=[...new Set(tableData.map(r=>r['Email']).filter(Boolean))].length;
+  if(!total){toast('No email addresses found','warn');return;}
+  if(!confirm(`Send to ${total} unique recipient(s)?`))return;
+  document.getElementById('send-btn').disabled=true;
+  clearLog(); addLog('info',`Preparing ${total} recipient(s)...`);
+  const rows=tableData.map(row=>{const safe={};Object.entries(row).forEach(([k,v])=>{safe[safeKey(k)]=v;});safe['File_Name']=row['File Name'];return safe;});
+  addLog('info','Encoding PDF files...');
+  const pdfData={};
+  for(const[fname,f]of Object.entries(pdfFileObjects)){pdfData[fname]=await toB64(f);}
+  addLog('info','Uploading to server...');
+  const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows,subject:document.getElementById('subject').value,body:document.getElementById('body').value,cc:document.getElementById('cc').value,bcc:document.getElementById('bcc').value,pdf_data:pdfData})});
+  const d=await r.json();
+  if(!d.ok){addLog('error',d.message||'Server error');document.getElementById('send-btn').disabled=false;return;}
+  currentJobId=d.job_id;
+  pollInterval=setInterval(pollStatus,1200);
+}
+
+async function pollStatus(){
+  const r=await fetch('/api/send_status/'+currentJobId);
+  const d=await r.json();
+  document.getElementById('stat-total').textContent=d.total||0;
+  document.getElementById('stat-sent').textContent=d.sent||0;
+  document.getElementById('stat-fail').textContent=d.failed||0;
+  const pct=d.total>0?((d.sent+d.failed)/d.total*100):0;
+  document.getElementById('progress-bar').style.width=pct+'%';
+  clearLog();
+  (d.log||[]).forEach(l=>addLog(l.type,l.msg));
+  if(d.done){clearInterval(pollInterval);addLog('info','─────────────────────────────');addLog('info',`Done. ✅ ${d.sent} sent  ❌ ${d.failed} failed`);document.getElementById('send-btn').disabled=false;}
+}
+
+function clearLog(){document.getElementById('log-box').innerHTML='';}
+function addLog(type,msg){const lb=document.getElementById('log-box');const d=document.createElement('div');d.className='log-line '+type;d.textContent=msg;lb.appendChild(d);lb.scrollTop=lb.scrollHeight;}
+
+function toB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
+
+// ── TOAST ──
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  const c={success:'var(--success)',error:'var(--danger)',warn:'var(--warn)',info:'var(--accent)'};
+  t.style.cssText=`background:var(--surface);border:1px solid ${c[type]};color:${c[type]};display:block;`;
+  t.textContent=msg;
+  clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3000);
+}
+
+// ── INIT ──
+setupDropZone();
+updatePlaceholders();
+renderColTags();
+</script>
+</body>
+</html>
