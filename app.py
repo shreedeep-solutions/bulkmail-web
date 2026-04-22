@@ -14,7 +14,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # ── app setup ──
 app = Flask(__name__, instance_relative_config=True)
 app.config['SECRET_KEY']         = os.environ.get('SECRET_KEY', secrets.token_hex(32))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bulkmail.db'
+import os
+db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'bulkmail.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -376,7 +378,8 @@ def _render(template, row):
 # ─────────────────────────────────────────
 # ENTRY
 # ─────────────────────────────────────────
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
