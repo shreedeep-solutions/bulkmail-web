@@ -96,19 +96,20 @@ def admin_required(f):
 def init_db():
     with app.app_context():
         db.create_all()
-        # Create default admin if none exists
-        if not User.query.filter_by(role='admin').first():
-            admin = User(
-                username='admin',
-                password=generate_password_hash('Admin@1234'),
-                display_name='Administrator',
-                role='admin'
-            )
-            db.session.add(admin)
-            db.session.commit()
-            print("✅ Default admin created — username: admin, password: Admin@1234")
-            print("⚠️  CHANGE THIS PASSWORD IMMEDIATELY after first login!")
-
+        try:
+            if not User.query.filter_by(username='admin').first():
+                admin = User(
+                    username='admin',
+                    password=generate_password_hash('Admin@1234'),
+                    display_name='Administrator',
+                    role='admin'
+                )
+                db.session.add(admin)
+                db.session.commit()
+                print("✅ Default admin created")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Admin already exists: {e}")
 # ─────────────────────────────────────────
 # AUTH ROUTES
 # ─────────────────────────────────────────
