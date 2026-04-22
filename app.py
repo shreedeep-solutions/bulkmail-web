@@ -25,7 +25,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 db = SQLAlchemy(app)
 
 # ── domain lock ──
-ALLOWED_DOMAINS = {'bulkemail.shreedeepsolutions.com', 'bulkmail-pro.onrender.com', '127.0.0.1', 'localhost'}
+ALLOWED_DOMAINS = {'bulkemail.shreedeepsolutions.com', '127.0.0.1', 'localhost'}
 
 def domain_check():
     host = request.host.split(':')[0]
