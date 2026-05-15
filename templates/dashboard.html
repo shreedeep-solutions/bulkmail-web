@@ -119,6 +119,9 @@ textarea{width:100%;resize:vertical;min-height:170px;font-family:var(--mono);fon
 /* TOAST */
 #toast{position:fixed;bottom:22px;right:22px;border-radius:10px;padding:11px 18px;font-size:0.86rem;z-index:9999;display:none;max-width:300px;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
 
+#split-drop-zone{border:2px dashed var(--border);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface2);}
+#split-drop-zone:hover,#split-drop-zone.drag-over{border-color:var(--accent);background:rgba(79,142,247,0.06);}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
@@ -143,6 +146,7 @@ textarea{width:100%;resize:vertical;min-height:170px;font-family:var(--mono);fon
   <button class="tab-btn active" onclick="switchTab('recipients',this)">📋 Recipients</button>
   <button class="tab-btn" onclick="switchTab('compose',this)">✉ Compose</button>
   <button class="tab-btn" onclick="switchTab('send',this)">🚀 Send</button>
+  <button class="tab-btn" onclick="switchTab('splitter',this)">✂ PDF Splitter</button>
 </div>
 
 <main>
@@ -251,6 +255,38 @@ The Management"></textarea>
   </div>
   <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
   <div class="log-box" id="log-box"><span class="log-line info">Send log will appear here...</span></div>
+</div>
+
+<!-- ══ TAB 4: PDF SPLITTER ══ -->
+<div class="tab-panel" id="tab-splitter">
+  <div class="card">
+    <div class="card-title">✂ PDF Splitter</div>
+    <p style="font-size:0.86rem;color:var(--muted);margin-bottom:20px;">
+      Upload a multi-page PDF (e.g. 100 member bills in one file) and download it as individual single-page PDFs in a ZIP file — ready to use directly in the email sender above.
+    </p>
+    <div id="split-drop-zone">
+      <div class="drop-icon">📄</div>
+      <div class="drop-title">Drop your multi-page PDF here</div>
+      <div class="drop-sub">or</div>
+      <button class="btn btn-primary" style="margin-top:10px;" onclick="document.getElementById('split-file-input').click()">Select PDF File</button>
+      <p class="drop-hint">Supports any size PDF — each page becomes a separate PDF</p>
+    </div>
+    <input type="file" id="split-file-input" accept=".pdf" style="display:none" onchange="handleSplitFile(event)">
+    <div id="split-status" style="display:none;margin-top:18px;">
+      <div class="progress-wrap"><div class="progress-bar" id="split-progress" style="width:0%"></div></div>
+      <p id="split-msg" style="font-size:0.86rem;color:var(--muted);margin-top:8px;text-align:center;"></p>
+    </div>
+  </div>
+  <div class="card" style="border-color:rgba(79,142,247,0.2);background:rgba(79,142,247,0.04);">
+    <div class="card-title">💡 How to use</div>
+    <ol style="padding-left:20px;line-height:2.2;font-size:0.86rem;color:var(--muted);">
+      <li>Your accounting software exports a <strong style="color:var(--text)">100-page PDF</strong> (1 bill per page)</li>
+      <li>Upload it here → get a <strong style="color:var(--text)">ZIP with 100 individual PDFs</strong></li>
+      <li>Extract the ZIP to a folder</li>
+      <li>Go to <strong style="color:var(--text)">Recipients tab</strong> → drag that folder → all 100 PDFs load instantly</li>
+      <li>Fill in email addresses → Send! ✅</li>
+    </ol>
+  </div>
 </div>
 
 </main>
@@ -493,9 +529,62 @@ async function pollStatus(){
   document.getElementById('stat-fail').textContent=d.failed||0;
   const pct=d.total>0?((d.sent+d.failed)/d.total*100):0;
   document.getElementById('progress-bar').style.width=pct+'%';
-  clearLog();
-  (d.log||[]).forEach(l=>addLog(l.type,l.msg));
-  if(d.done){clearInterval(pollInterval);addLog('info','─────────────────────────────');addLog('info',`Done. ✅ ${d.sent} sent  ❌ ${d.failed} failed`);document.getElementById('send-btn').disabled=false;}
+  // PROGRESS FIX: render full log from server state, never reset mid-send
+  const lb=document.getElementById('log-box');
+  lb.innerHTML='';
+  (d.log||[]).forEach(l=>{ const div=document.createElement('div'); div.className='log-line '+l.type; div.textContent=l.msg; lb.appendChild(div); });
+  lb.scrollTop=lb.scrollHeight;
+  if(d.done){clearInterval(pollInterval);document.getElementById('send-btn').disabled=false;}
+}
+
+// ── PDF SPLITTER ──
+function setupSplitZone(){
+  const zone=document.getElementById('split-drop-zone');
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+  zone.addEventListener('dragleave',e=>{if(!zone.contains(e.relatedTarget))zone.classList.remove('drag-over');});
+  zone.addEventListener('drop',e=>{
+    e.preventDefault();zone.classList.remove('drag-over');
+    const f=[...e.dataTransfer.files].find(f=>f.name.toLowerCase().endsWith('.pdf'));
+    if(f)doSplit(f); else toast('Please drop a PDF file','warn');
+  });
+}
+
+function handleSplitFile(event){
+  const f=event.target.files[0];
+  if(f)doSplit(f);
+  event.target.value='';
+}
+
+async function doSplit(file){
+  const status=document.getElementById('split-status');
+  const msg=document.getElementById('split-msg');
+  const bar=document.getElementById('split-progress');
+  status.style.display='block';
+  bar.style.width='30%';
+  msg.textContent=`Uploading ${file.name} (${(file.size/1024/1024).toFixed(1)} MB)...`;
+
+  const formData=new FormData();
+  formData.append('pdf',file);
+
+  try{
+    bar.style.width='60%';
+    msg.textContent='Splitting pages on server...';
+    const r=await fetch('/api/split_pdf',{method:'POST',body:formData});
+    if(!r.ok){const d=await r.json();toast(d.message||'Split failed','error');status.style.display='none';return;}
+    bar.style.width='90%';
+    msg.textContent='Preparing download...';
+    const blob=await r.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=file.name.replace('.pdf','')+'_split.zip';
+    a.click();
+    bar.style.width='100%';
+    msg.style.color='var(--success)';
+    msg.textContent='✅ Done! ZIP downloaded. Extract it and drag the folder into Recipients tab.';
+  }catch(e){
+    toast('Error: '+e.message,'error');
+    status.style.display='none';
+  }
 }
 
 function clearLog(){document.getElementById('log-box').innerHTML='';}
@@ -516,6 +605,7 @@ function toast(msg,type){
 setupDropZone();
 updatePlaceholders();
 renderColTags();
+setupSplitZone();
 </script>
 </body>
 </html>
