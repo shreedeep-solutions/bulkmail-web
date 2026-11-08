@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#8e1b2c">
 <title>BulkMail Pro</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
   --bg:#f5f3f1;--surface:#fff;--surface2:#faf8f6;--border:#e3ddd8;--text:#211c19;--muted:#6f6661;--faint:#9a918b;
@@ -201,13 +201,13 @@ ul.checks .sub{font-size:12.5px;color:var(--muted)}
 </section>
 </main>
 
-<script src="lib/xlsx.full.min.js" defer></script>
-<script src="lib/pdf-lib.min.js" defer></script>
-<script src="lib/pdf.min.js" defer></script>
+<script src="xlsx.full.min.js" defer></script>
+<script src="pdf-lib.min.js" defer></script>
+<script src="pdf.min.js" defer></script>
 <script>
 (function () {
 "use strict";
-var APP_VERSION = "1.0.0";
+var APP_VERSION = "1.0.1";
 var CLIENT_ID = "327826726135-d2l1rt2ufvv0gjccp061rhrf9ss7ot2g.apps.googleusercontent.com";
 var SCOPES = "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.metadata";
 var GMAIL = "https://gmail.googleapis.com";
@@ -496,7 +496,7 @@ function keyRe(key) {
 }
 var pdfjsReady = false;
 function pdfText(id) {
-  if (!pdfjsReady) { pdfjsLib.GlobalWorkerOptions.workerSrc = "lib/pdf.worker.min.js"; pdfjsReady = true; }
+  if (!pdfjsReady) { pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js"; pdfjsReady = true; }
   return getFile(id).then(function (f) { return f.blob.arrayBuffer(); }).then(function (buf) {
     return pdfjsLib.getDocument({ data: buf }).promise;
   }).then(function (doc) {
