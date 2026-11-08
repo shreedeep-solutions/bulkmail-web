@@ -1,0 +1,4 @@
+Libraries included unchanged:
+- SheetJS xlsx 0.18.5 (Apache-2.0) - xlsx.full.min.js
+- pdf-lib 1.17.1 (MIT) - pdf-lib.min.js
+- PDF.js (pdfjs-dist) 3.11.174 (Apache-2.0) - pdf.min.js, pdf.worker.min.js

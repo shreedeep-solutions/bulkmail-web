@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8e1b2c">
+<title>BulkMail Pro</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#f5f3f1;--surface:#fff;--surface2:#faf8f6;--border:#e3ddd8;--text:#211c19;--muted:#6f6661;--faint:#9a918b;
+  --accent:#8e1b2c;--accent-h:#731523;--accent-soft:#f6e7e9;--on-accent:#fff;
+  --ok:#1d7f52;--ok-soft:#e5f4ec;--warn:#a8650e;--warn-soft:#fbf0dd;--bad:#c0392b;--bad-soft:#fbe7e4;--info:#2f5f9e;--info-soft:#e7eef8;
+  --radius:12px;--font:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+[data-theme=dark]{
+  --bg:#141113;--surface:#1d191b;--surface2:#231f21;--border:#352f32;--text:#ede6e2;--muted:#a69b96;--faint:#7d726d;
+  --accent:#e0566b;--accent-h:#ea6f82;--accent-soft:#3a2026;--on-accent:#1a0b0e;
+  --ok:#4cc38a;--ok-soft:#1b3127;--warn:#e2a54a;--warn-soft:#352a17;--bad:#f07466;--bad-soft:#3a1f1c;--info:#7aa7e6;--info-soft:#1c2738;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 var(--font);-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border);padding:calc(8px + env(safe-area-inset-top)) 14px 8px;display:flex;align-items:center;gap:10px}
+.mark{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:none}
+header h1{font-size:16px;margin:0;line-height:1.1}
+header .sub{font-size:11.5px;color:var(--muted)}
+header .sp{flex:1}
+.iconbtn{background:none;border:1px solid var(--border);border-radius:9px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer}
+nav.tabs{display:flex;gap:4px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:51px;z-index:19;overflow-x:auto}
+nav.tabs button{border:none;background:none;padding:8px 12px;border-radius:8px;cursor:pointer;white-space:nowrap;color:var(--muted);font-weight:600}
+nav.tabs button.on{background:var(--accent-soft);color:var(--accent)}
+nav.tabs .cnt{background:var(--border);color:var(--text);border-radius:99px;padding:0 7px;font-size:11.5px;margin-left:4px}
+main{max-width:980px;margin:0 auto;padding:12px 12px calc(90px + env(safe-area-inset-bottom))}
+@media (max-width:700px){
+  nav.tabs{position:fixed;bottom:0;top:auto;left:0;right:0;justify-content:space-around;border-top:1px solid var(--border);border-bottom:none;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+  nav.tabs button{padding:8px 6px;font-size:12.5px;flex:1}
+}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px}
+.card-h{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-h h2{font-size:15px;margin:0;flex:1}
+.card-b{padding:12px 14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stack>*+*{margin-top:10px}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:9px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.big{padding:13px 18px;font-size:16px;width:100%}
+.btn.danger{color:var(--bad)}
+label.f{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.inp{width:100%;border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:10px 11px;font-size:16px}
+textarea.inp{min-height:150px;resize:vertical}
+.hint{font-size:12px;color:var(--faint);margin-top:3px}
+.muted{color:var(--muted)} .small{font-size:13px} .faint{color:var(--faint)}
+.notice{border-radius:9px;padding:10px 12px;font-size:13.5px}
+.notice.warn{background:var(--warn-soft);color:var(--warn)} .notice.bad{background:var(--bad-soft);color:var(--bad)}
+.notice.info{background:var(--info-soft);color:var(--info)} .notice.ok{background:var(--ok-soft);color:var(--ok)}
+.rcards{display:grid;gap:8px}
+.rc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center}
+.rc.off{opacity:.5}
+.rc .n{color:var(--faint);font-size:12px}
+.rc .who{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc .meta{grid-column:2/4;font-size:12.5px;color:var(--muted)}
+.rc .em{grid-column:1/4}
+.rc .em input{font-size:15px;padding:8px 10px}
+.rc .em input.bad{border-color:var(--bad)}
+.pdf{display:inline-flex;gap:5px;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:2px 9px;font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.pdf.none{color:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--border);background:var(--surface2);border-radius:99px;padding:4px 10px;font-size:13px;cursor:pointer}
+ul.checks{list-style:none;margin:0;padding:0}
+ul.checks li{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+ul.checks li:last-child{border:none}
+ul.checks .ic{flex:none;width:20px;text-align:center}
+ul.checks .sub{font-size:12.5px;color:var(--muted)}
+.ok-t{color:var(--ok)} .bad-t{color:var(--bad)} .warn-t{color:var(--warn)} .info-t{color:var(--info)}
+.acc{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.acc:last-child{border:none}
+.acc .e{font-weight:600;word-break:break-all}
+@media (max-width:560px){.acc{grid-template-columns:1fr}.acc>.row{justify-content:flex-start!important}}
+.bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
+.bar>div{height:100%;background:var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.stats div{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px}
+.stats b{display:block;font-size:20px}
+.stats span{font-size:12px;color:var(--muted)}
+.jl{max-height:50vh;overflow:auto;border:1px solid var(--border);border-radius:9px}
+.jl div{padding:7px 10px;border-bottom:1px solid var(--border);font-size:13px;display:flex;gap:8px}
+.jl div:last-child{border:none}
+.jl .st{width:70px;flex:none;font-weight:600}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom));background:#2a2326;color:#fff;padding:10px 16px;border-radius:10px;z-index:100;max-width:92vw;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:701px){.modal-bg{align-items:center}}
+.modal{background:var(--surface);border-radius:14px 14px 0 0;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:16px}
+@media (min-width:701px){.modal{border-radius:14px}}
+.modal h3{margin:0 0 10px;font-size:17px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fields .full{grid-column:1/3}
+@media (max-width:520px){.fields{grid-template-columns:1fr}.fields .full{grid-column:auto}}
+.pause{border:2px solid var(--warn);background:var(--warn-soft);border-radius:10px;padding:12px;margin:10px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="mark">श्री</div>
+  <div><h1>BulkMail Pro</h1><div class="sub">Shreedeep Solutions · phone &amp; web</div></div>
+  <div class="sp"></div>
+  <button class="iconbtn" id="themeBtn" title="Dark / light">◐</button>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-tab="recipients" class="on">Recipients<span class="cnt" id="cntRows">0</span></button>
+  <button data-tab="compose">Compose</button>
+  <button data-tab="send">Send</button>
+  <button data-tab="accounts">Accounts</button>
+  <button data-tab="history">History</button>
+</nav>
+<main>
+
+<!-- ═════ RECIPIENTS ═════ -->
+<section id="v-recipients">
+  <div class="card"><div class="card-b row">
+    <button class="btn primary" id="addPdfBtn">＋ Add PDFs</button>
+    <button class="btn" id="splitBtn">✂ Split one PDF</button>
+    <button class="btn" id="importBtn">⇪ Import Excel / CSV</button>
+    <button class="btn" id="addRowBtn">＋ Row</button>
+    <span class="sp" style="flex:1"></span>
+    <button class="btn ghost danger" id="clearBtn">Clear all</button>
+  </div></div>
+  <input type="file" id="pickPdf" accept="application/pdf,.pdf" multiple class="hidden">
+  <input type="file" id="pickSplit" accept="application/pdf,.pdf" class="hidden">
+  <input type="file" id="pickSheet" accept=".xlsx,.xls,.csv,.txt" class="hidden">
+  <input type="file" id="pickAttach" accept="application/pdf,.pdf" class="hidden">
+  <div id="rowsInfo"></div>
+  <div class="rcards" id="rcards"></div>
+</section>
+
+<!-- ═════ COMPOSE ═════ -->
+<section id="v-compose" class="hidden">
+  <div class="card"><div class="card-b stack">
+    <div><label class="f" for="cSubject">Subject</label><input class="inp" id="cSubject" placeholder="Maintenance bill for {Flat/Unit No.}"></div>
+    <div><label class="f" for="cBody">Message</label><textarea class="inp" id="cBody" placeholder="Dear {Recipient Name},&#10;&#10;Please find your bill attached.&#10;&#10;Regards,&#10;Shreedeep Solutions"></textarea></div>
+    <div><label class="f">Tap to insert a field</label><div class="chips" id="phChips"></div></div>
+    <div class="fields">
+      <div><label class="f" for="cCc">CC <span class="faint">(optional)</span></label><input class="inp" id="cCc" placeholder="office@…"></div>
+      <div><label class="f" for="cBcc">BCC <span class="faint">(optional)</span></label><input class="inp" id="cBcc"></div>
+      <div class="full"><label class="f" for="cReply">Reply-To <span class="faint">(empty = main account)</span></label><input class="inp" id="cReply"></div>
+    </div>
+    <div class="row"><select class="inp" id="tplSel" style="flex:1;min-width:160px"><option value="">Saved templates…</option></select>
+      <button class="btn sm" id="tplLoad">Use</button><button class="btn sm" id="tplSave">Save as template</button><button class="btn sm ghost danger" id="tplDel">Delete</button></div>
+    <div class="row"><button class="btn" id="previewBtn">👁 Preview first email</button></div>
+  </div></div>
+</section>
+
+<!-- ═════ SEND ═════ -->
+<section id="v-send" class="hidden">
+  <div id="s4sCard" class="card hidden"><div class="card-h"><h2>📨 Bills from Solutions4Society</h2></div><div class="card-b" id="s4sBody"></div></div>
+  <div class="card" id="planCard"><div class="card-h"><h2>Before you send</h2><button class="btn sm ghost" id="recheck">↻ Re-check</button></div>
+    <div class="card-b"><ul class="checks" id="checks"></ul></div></div>
+  <div class="card" id="goCard"><div class="card-b stack">
+    <div class="row"><label class="f" for="gap" style="margin:0">Gap between emails</label><input class="inp" id="gap" type="number" min="0" max="60" step="0.5" style="width:90px"> <span class="muted small">seconds</span></div>
+    <div class="row"><button class="btn" id="testBtn">✉ Send test to myself</button></div>
+    <button class="btn primary big" id="sendBtn">Start sending</button>
+  </div></div>
+  <div class="card hidden" id="jobCard"><div class="card-h"><h2 id="jobTitle">Sending…</h2><button class="btn sm danger" id="stopBtn">Stop</button><button class="btn sm hidden" id="retryBtn">Send again to unsent</button></div>
+    <div class="card-b">
+      <div class="bar"><div id="jobBar" style="width:0"></div></div>
+      <div class="stats"><div><b id="jTotal">0</b><span>Total</span></div><div><b id="jSent" class="ok-t">0</b><span>Sent</span></div><div><b id="jFailed" class="bad-t">0</b><span>Failed</span></div><div><b id="jFrom" style="font-size:13px;word-break:break-all">–</b><span>Sending from</span></div></div>
+      <div id="jobPause"></div>
+      <div id="jobNotes"></div>
+      <div class="jl" id="jobList"></div>
+      <div class="hint" style="margin-top:6px">Keep this screen open while sending. On a phone, don't lock the screen.</div>
+    </div></div>
+</section>
+
+<!-- ═════ ACCOUNTS ═════ -->
+<section id="v-accounts" class="hidden">
+  <div class="card"><div class="card-h"><h2>Gmail accounts</h2><button class="btn sm" id="usageBtn">↻ Check today's use</button></div>
+    <div class="card-b">
+      <div class="small muted" style="margin-bottom:8px">Used one after another. When an account reaches its “switch at” number, BulkMail moves to the next one on its own. The first account is the <b>main</b> account.</div>
+      <div id="accList"></div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="addAccBtn">＋ Add Gmail account</button><span class="muted small" id="roomNote"></span></div>
+    </div></div>
+  <div class="card"><div class="card-b stack">
+    <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="replyMain" style="margin-top:3px"> <span>Replies always come to the main account, even when another account sends</span></label>
+    <div><label class="f" for="defLimit">“Switch at” for new accounts</label><input class="inp" id="defLimit" type="number" min="1" max="2000" style="max-width:140px"><div class="hint">Gmail allows about 500 recipients in 24 hours per account — for all sending (by hand too).</div></div>
+    <div class="notice info small">Sign-in happens with Google; BulkMail never sees your password. Each sign-in lasts about 1 hour — after that, tap <b>Connect</b> again. Only accounts added as “test users” in the BulkMail Google project can sign in.</div>
+  </div></div>
+  <div class="card"><div class="card-b small muted">BulkMail Pro web <span id="verLbl"></span> · Shreedeep Solutions · Everything stays on this device (PDFs, list, history).
+    <div style="margin-top:8px"><button class="btn sm" id="installBtn" class="hidden">Install app</button> <button class="btn sm ghost danger" id="forgetBtn">Remove all data from this device</button></div></div></div>
+</section>
+
+<!-- ═════ HISTORY ═════ -->
+<section id="v-history" class="hidden">
+  <div class="card"><div class="card-h"><h2>Sent history</h2><button class="btn sm" id="histExport">⬇ Excel</button><button class="btn sm ghost danger" id="histClear">Clear</button></div>
+    <div class="card-b"><div class="jl" id="histList" style="max-height:none"></div></div></div>
+</section>
+</main>
+
+<script src="lib/xlsx.full.min.js" defer></script>
+<script src="lib/pdf-lib.min.js" defer></script>
+<script src="lib/pdf.min.js" defer></script>
+<script>
+(function () {
+"use strict";
+var APP_VERSION = "1.0.0";
+var CLIENT_ID = "327826726135-d2l1rt2ufvv0gjccp061rhrf9ss7ot2g.apps.googleusercontent.com";
+var SCOPES = "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.metadata";
+var GMAIL = "https://gmail.googleapis.com";
+var S4S_ORIGINS = ["https://sas.shreedeepsolutions.com", "https://s4s.shreedeepsolutions.com", "https://shreedeep-solutions.github.io"];
+var EMAIL_RE = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/;
+
+/* ───────── helpers ───────── */
+function $(id) { return document.getElementById(id); }
+function el(tag, attrs) {
+  var n = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function (k) {
+    var v = attrs[k];
+    if (v == null) return;
+    if (k === "text") n.textContent = v; else if (k === "html") n.innerHTML = v;
+    else if (k.slice(0, 2) === "on" && typeof v === "function") n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  });
+  for (var i = 2; i < arguments.length; i++) { var c = arguments[i]; if (c == null) continue; n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); }
+  return n;
+}
+function plural(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
+function fmtSize(b) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(0) + " KB" : (b / 1048576).toFixed(1) + " MB"; }
+function norm(k) { return String(k).toLowerCase().replace(/[^0-9a-z\u0900-\u097f]/g, ""); }
+function splitEmails(raw) { return String(raw || "").split(/[,;\s]+/).map(function (e) { return e.trim().replace(/^<|>$/g, ""); }).filter(Boolean); }
+function naturalCmp(a, b) { return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" }); }
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function ls(k, def) { try { var v = localStorage.getItem("bm." + k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } }
+function lsSet(k, v) { try { localStorage.setItem("bm." + k, JSON.stringify(v)); } catch (e) { toast("Could not save on this device (storage full?)"); } }
+var toastT;
+function toast(msg, ms) {
+  var t = $("toastEl"); if (!t) { t = el("div", { id: "toastEl", class: "toast" }); document.body.appendChild(t); }
+  t.textContent = msg; t.classList.remove("hidden"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.add("hidden"); }, ms || 3500);
+}
+function notice(type, text) { return el("div", { class: "notice " + type }, text); }
+function modal(title, body, buttons) {
+  return new Promise(function (resolve) {
+    var bg = el("div", { class: "modal-bg" }), m = el("div", { class: "modal" }, el("h3", { text: title }));
+    if (typeof body === "string") m.appendChild(el("p", { text: body })); else if (body) m.appendChild(body);
+    var row = el("div", { class: "row", style: "justify-content:flex-end;margin-top:14px" });
+    (buttons || [["Cancel", false], ["OK", true, "primary"]]).forEach(function (b) {
+      row.appendChild(el("button", { class: "btn " + (b[2] || ""), text: b[0], onclick: function () { bg.remove(); resolve(b[1]); } }));
+    });
+    m.appendChild(row); bg.appendChild(m);
+    bg.addEventListener("click", function (e) { if (e.target === bg) { bg.remove(); resolve(false); } });
+    document.body.appendChild(bg);
+  });
+}
+function ask(title, text, okText, danger) { return modal(title, text, [["Cancel", false], [okText || "OK", true, danger ? "primary danger" : "primary"]]); }
+
+/* ───────── PDF storage (IndexedDB) ───────── */
+var DB = null;
+function db() {
+  if (DB) return Promise.resolve(DB);
+  return new Promise(function (res, rej) {
+    var r = indexedDB.open("bulkmail", 1);
+    r.onupgradeneeded = function () { r.result.createObjectStore("files", { keyPath: "id" }); };
+    r.onsuccess = function () { DB = r.result; res(DB); };
+    r.onerror = function () { rej(r.error); };
+  });
+}
+function idb(mode, fn) {
+  return db().then(function (d) {
+    return new Promise(function (res, rej) {
+      var tx = d.transaction("files", mode), st = tx.objectStore("files"), out = fn(st);
+      tx.oncomplete = function () { res(out && out.result !== undefined ? out.result : out); };
+      tx.onerror = function () { rej(tx.error); };
+    });
+  });
+}
+function putFile(name, blob) { var id = uid(); return idb("readwrite", function (st) { st.put({ id: id, name: name, size: blob.size, blob: blob }); }).then(function () { S.files[id] = { name: name, size: blob.size }; return id; }); }
+function getFile(id) { return idb("readonly", function (st) { return st.get(id); }); }
+function delFiles(ids) { return idb("readwrite", function (st) { ids.forEach(function (i) { st.delete(i); }); }).then(function () { ids.forEach(function (i) { delete S.files[i]; }); }); }
+function listFiles() { return idb("readonly", function (st) { return st.getAll(); }); }
+
+/* ───────── state ───────── */
+var S = {
+  columns: ls("columns", ["Recipient Name", "Flat/Unit No."]),
+  rows: ls("rows", []),
+  compose: ls("compose", { subject: "", body: "", cc: "", bcc: "", reply_to: "" }),
+  cfg: ls("cfg", { accounts: [], reply_main: true, def_limit: 450, gap: 2 }),
+  templates: ls("templates", []),
+  history: ls("history", []),
+  files: {}, tab: "recipients", job: null, s4s: null
+};
+var saveT;
+function save() { clearTimeout(saveT); saveT = setTimeout(function () { lsSet("columns", S.columns); lsSet("rows", S.rows); lsSet("compose", S.compose); }, 300); $("cntRows").textContent = S.rows.length; }
+function saveCfg() { lsSet("cfg", S.cfg); }
+
+/* ───────── tabs ───────── */
+function showTab(t) {
+  S.tab = t;
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (b) { b.classList.toggle("on", b.getAttribute("data-tab") === t); });
+  ["recipients", "compose", "send", "accounts", "history"].forEach(function (k) { $("v-" + k).classList.toggle("hidden", k !== t); });
+  if (t === "recipients") renderRows();
+  if (t === "compose") renderCompose();
+  if (t === "send") refreshPlan();
+  if (t === "accounts") renderAccounts();
+  if (t === "history") renderHistory();
+  window.scrollTo(0, 0);
+}
+$("tabs").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) showTab(b.getAttribute("data-tab")); });
+
+/* ═════════════ RECIPIENTS ═════════════ */
+function newRow(fileId) { var r = { _id: uid(), Email: "" }; S.columns.forEach(function (c) { r[c] = ""; }); if (fileId) r._file = fileId; return r; }
+function rowTitle(r) { return r[S.columns[0]] || (r._file && S.files[r._file] ? S.files[r._file].name : "") || "(no name)"; }
+function renderRows() {
+  var box = $("rcards"); box.innerHTML = ""; $("cntRows").textContent = S.rows.length;
+  var info = $("rowsInfo"); info.innerHTML = "";
+  if (!S.rows.length) {
+    info.appendChild(notice("info", "Start with “Add PDFs” (one bill per member) or “Split one PDF” (all bills in one file). Then “Import Excel / CSV” with the member list (flat no., name, email) — BulkMail finds each member's bill by flat number."));
+    return;
+  }
+  var noEmail = S.rows.filter(function (r) { return !r._off && !splitEmails(r.Email).length; }).length;
+  if (noEmail) info.appendChild(el("div", { style: "margin-bottom:8px" }, notice("warn", plural(noEmail, "row") + " without an email address — they will be skipped.")));
+  S.rows.forEach(function (r, i) {
+    var f = r._file && S.files[r._file];
+    var em = el("input", { class: "inp", type: "email", inputmode: "email", placeholder: "email@…", value: r.Email || "" });
+    em.addEventListener("change", function () { r.Email = this.value.trim(); this.classList.toggle("bad", !!r.Email && splitEmails(r.Email).some(function (e) { return !EMAIL_RE.test(e); })); save(); });
+    if (r.Email && splitEmails(r.Email).some(function (e) { return !EMAIL_RE.test(e); })) em.classList.add("bad");
+    var meta = S.columns.slice(1).map(function (c) { return r[c] ? c + ": " + r[c] : ""; }).filter(Boolean).join(" · ");
+    var pdf = f ? el("span", { class: "pdf", title: "Open", onclick: function () { openPdf(r._file); } }, "📄 " + f.name)
+      : el("span", { class: "pdf none", onclick: function () { attachTarget = r; $("pickAttach").click(); } }, r._file ? "PDF missing — attach" : "＋ attach PDF");
+    var card = el("div", { class: "rc" + (r._off ? " off" : "") },
+      el("input", { type: "checkbox", title: "Send to this row", onchange: function () { r._off = !this.checked; card.classList.toggle("off", !!r._off); save(); } }),
+      el("div", { class: "who", text: rowTitle(r) }),
+      el("div", { class: "row", style: "gap:2px" },
+        el("button", { class: "btn sm ghost", text: "✎", title: "Edit", onclick: function () { editRow(r); } }),
+        el("button", { class: "btn sm ghost danger", text: "✕", title: "Remove", onclick: function () { removeRows([r]); } })),
+      el("div", { class: "meta" }, meta ? meta + "  " : "", pdf, r._note ? el("span", { class: "warn-t", text: "  " + r._note }) : null),
+      el("div", { class: "em" }, em));
+    card.firstChild.checked = !r._off;
+    box.appendChild(card);
+  });
+}
+function editRow(r) {
+  var f = el("div", { class: "stack" });
+  var inputs = {};
+  ["Email"].concat(S.columns).forEach(function (c) {
+    inputs[c] = el("input", { class: "inp", value: r[c] || "" });
+    f.appendChild(el("div", null, el("label", { class: "f", text: c }), inputs[c]));
+  });
+  modal("Edit row", f, [["Cancel", false], ["Save", true, "primary"]]).then(function (ok) {
+    if (!ok) return;
+    Object.keys(inputs).forEach(function (c) { r[c] = inputs[c].value.trim(); });
+    r._note = ""; save(); renderRows();
+  });
+}
+function removeRows(list) {
+  S.rows = S.rows.filter(function (r) { return list.indexOf(r) < 0; });
+  var orphan = [];
+  list.forEach(function (r) { if (r._file && !S.rows.some(function (x) { return x._file === r._file; })) orphan.push(r._file); });
+  if (orphan.length) delFiles(orphan);
+  save(); renderRows();
+}
+$("addRowBtn").addEventListener("click", function () { var r = newRow(); S.rows.push(r); save(); editRow(r); });
+$("clearBtn").addEventListener("click", function () {
+  if (!S.rows.length && !Object.keys(S.files).length) return;
+  ask("Clear everything?", "Removes all rows and PDFs from BulkMail on this device. Your message in Compose is kept.", "Clear all", true).then(function (y) {
+    if (!y) return;
+    var ids = Object.keys(S.files); S.rows = []; delFiles(ids).then(function () { save(); renderRows(); });
+  });
+});
+function openPdf(id) { getFile(id).then(function (f) { if (!f) return toast("PDF not found"); var u = URL.createObjectURL(f.blob); window.open(u, "_blank"); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); }); }
+function isPdf(file) { return /\.pdf$/i.test(file.name) || file.type === "application/pdf"; }
+
+/* add PDFs */
+var attachTarget = null;
+$("addPdfBtn").addEventListener("click", function () { $("pickPdf").click(); });
+$("pickPdf").addEventListener("change", function () { var fl = Array.prototype.slice.call(this.files); this.value = ""; addPdfs(fl); });
+$("pickAttach").addEventListener("change", function () {
+  var f = this.files[0]; this.value = ""; if (!f || !attachTarget) return;
+  var r = attachTarget; attachTarget = null;
+  putFile(f.name, f).then(function (id) { r._file = id; save(); renderRows(); });
+});
+function addPdfs(list) {
+  list = list.filter(isPdf).sort(function (a, b) { return naturalCmp(a.name, b.name); });
+  if (!list.length) return toast("No PDF files chosen.");
+  var inTable = {}; S.rows.forEach(function (r) { if (r._file && S.files[r._file]) inTable[S.files[r._file].name.toLowerCase() + "|" + S.files[r._file].size] = 1; });
+  var dup = 0, added = 0;
+  return list.reduce(function (p, f) {
+    return p.then(function () {
+      if (inTable[f.name.toLowerCase() + "|" + f.size]) { dup++; return; }
+      return f.slice(0, 1024).text().then(function (head) {
+        if (head.indexOf("%PDF") < 0) { dup++; return; }
+        return putFile(f.name, f).then(function (id) { S.rows.push(newRow(id)); inTable[f.name.toLowerCase() + "|" + f.size] = 1; added++; });
+      });
+    });
+  }, Promise.resolve()).then(function () {
+    save(); renderRows(); toast(plural(added, "PDF") + " added" + (dup ? " · " + dup + " already in the list (skipped)" : ""));
+  });
+}
+
+/* split one PDF into one-page bills */
+$("splitBtn").addEventListener("click", function () { $("pickSplit").click(); });
+$("pickSplit").addEventListener("change", function () {
+  var f = this.files[0]; this.value = ""; if (!f) return;
+  var per = el("input", { class: "inp", type: "number", min: "1", value: "1", style: "max-width:100px" });
+  var body = el("div", { class: "stack" }, el("div", { text: f.name + " (" + fmtSize(f.size) + ")" }),
+    el("div", null, el("label", { class: "f", text: "Pages per bill" }), per));
+  modal("Split into separate bills", body, [["Cancel", false], ["Split", true, "primary"]]).then(function (ok) {
+    if (!ok) return;
+    var n = Math.max(1, parseInt(per.value, 10) || 1);
+    toast("Splitting…", 60000);
+    f.arrayBuffer().then(function (buf) { return PDFLib.PDFDocument.load(buf, { ignoreEncryption: true }); }).then(function (src) {
+      var total = src.getPageCount(), base = f.name.replace(/\.pdf$/i, ""), made = 0, pad = String(Math.ceil(total / n)).length;
+      var chain = Promise.resolve();
+      for (var start = 0; start < total; start += n) (function (start) {
+        chain = chain.then(function () {
+          return PDFLib.PDFDocument.create().then(function (doc) {
+            var idx = []; for (var k = start; k < Math.min(start + n, total); k++) idx.push(k);
+            return doc.copyPages(src, idx).then(function (pages) { pages.forEach(function (p) { doc.addPage(p); }); return doc.save(); });
+          }).then(function (bytes) {
+            made++;
+            var name = base + "_" + String(made).padStart(pad, "0") + ".pdf";
+            return putFile(name, new Blob([bytes], { type: "application/pdf" })).then(function (id) { S.rows.push(newRow(id)); });
+          });
+        });
+      })(start);
+      return chain.then(function () { save(); renderRows(); toast("Split into " + plural(made, "PDF") + ". Now import the member list to fill in the emails.", 6000); });
+    }).catch(function (e) { toast("Could not split this PDF: " + e.message, 6000); });
+  });
+});
+
+/* import Excel / CSV (member list) */
+$("importBtn").addEventListener("click", function () { $("pickSheet").click(); });
+$("pickSheet").addEventListener("change", function () {
+  var f = this.files[0]; this.value = ""; if (!f) return;
+  f.arrayBuffer().then(function (buf) {
+    var wb = XLSX.read(buf, { type: "array" }), ws = wb.Sheets[wb.SheetNames[0]];
+    var m = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: false });
+    m = m.filter(function (r) { return r.some(function (c) { return String(c).trim(); }); });
+    if (m.length < 2) return toast("The sheet looks empty.");
+    // header = first row that has an email-like column name or the first row
+    var hi = 0;
+    for (var i = 0; i < Math.min(m.length, 10); i++) if (m[i].some(function (c) { return /e-?mail/i.test(c); })) { hi = i; break; }
+    var head = m[hi].map(function (h, j) { return String(h).trim() || "Column " + (j + 1); });
+    var members = m.slice(hi + 1).map(function (r) { var o = {}; head.forEach(function (h, j) { o[h] = String(r[j] == null ? "" : r[j]).trim(); }); return o; });
+    importDialog(head, members);
+  }).catch(function (e) { toast("Could not read this file: " + e.message, 6000); });
+});
+function guess(head, re) { for (var i = 0; i < head.length; i++) if (re.test(head[i])) return head[i]; return ""; }
+function importDialog(head, members) {
+  var opt = function (sel, val, none) { if (none) sel.appendChild(el("option", { value: "", text: none })); head.forEach(function (h) { sel.appendChild(el("option", { value: h, text: h })); }); sel.value = val; return sel; };
+  var eSel = opt(el("select", { class: "inp" }), guess(head, /e-?mail/i));
+  var kSel = opt(el("select", { class: "inp" }), guess(head, /flat|unit|shop|room|no\b|number/i), "(none)");
+  var nSel = opt(el("select", { class: "inp" }), guess(head, /name|member/i), "(none)");
+  var pdfRows = S.rows.filter(function (r) { return r._file && S.files[r._file]; });
+  var mode = el("select", { class: "inp" },
+    el("option", { value: "match", text: "Find each member's bill in the PDFs (by flat no.)" }),
+    el("option", { value: "order", text: "Fill PDFs in order (1st member → 1st PDF)" }),
+    el("option", { value: "add", text: "Just add members as new rows" }));
+  if (!pdfRows.length) mode.value = "add";
+  var body = el("div", { class: "stack" },
+    el("div", { class: "small muted", text: plural(members.length, "member") + " found · " + plural(pdfRows.length, "PDF") + " in the list" }),
+    el("div", null, el("label", { class: "f", text: "Email column" }), eSel),
+    el("div", null, el("label", { class: "f", text: "Flat / unit no. column" }), kSel),
+    el("div", null, el("label", { class: "f", text: "Name column" }), nSel),
+    el("div", null, el("label", { class: "f", text: "What to do" }), mode));
+  modal("Import member list", body, [["Cancel", false], ["Import", true, "primary"]]).then(function (ok) {
+    if (!ok) return;
+    var eCol = eSel.value, kCol = kSel.value, nCol = nSel.value;
+    // columns: name first, flat second, then the rest (no email)
+    var cols = [nCol, kCol].filter(Boolean).concat(head.filter(function (h) { return h !== eCol && h !== nCol && h !== kCol; }));
+    cols.forEach(function (c) { if (S.columns.indexOf(c) < 0) S.columns.push(c); });
+    if (nCol) S.columns = [nCol].concat(S.columns.filter(function (c) { return c !== nCol; }));
+    var fill = function (r, mb) { r.Email = mb[eCol] || ""; head.forEach(function (h) { if (h !== eCol) r[h] = mb[h]; }); r._note = ""; };
+    if (mode.value === "add") {
+      members.forEach(function (mb) { var r = newRow(); fill(r, mb); S.rows.push(r); });
+      save(); renderRows(); toast(plural(members.length, "member") + " added"); return;
+    }
+    if (mode.value === "order") {
+      var sorted = pdfRows.slice().sort(function (a, b) { return naturalCmp(S.files[a._file].name, S.files[b._file].name); });
+      sorted.forEach(function (r, i) { if (members[i]) fill(r, members[i]); else r._note = "No member left for this PDF"; });
+      save(); renderRows(); toast("Filled " + Math.min(sorted.length, members.length) + " PDFs in order"); return;
+    }
+    if (!kCol) return toast("Choose the flat / unit no. column to match by.", 5000);
+    matchPdfs(pdfRows, members, kCol, nCol, fill);
+  });
+}
+function keyRe(key) {
+  var parts = String(key).trim().split(/[\s\-\/]+/).filter(Boolean);
+  if (!parts.length) return null;
+  var body = parts.map(function (p) { return p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("[\\s\\-/]*");
+  return new RegExp("(?<![0-9A-Za-z])(?<![0-9][.,])" + body + "(?![0-9A-Za-z])(?![.,][0-9])", "i");
+}
+var pdfjsReady = false;
+function pdfText(id) {
+  if (!pdfjsReady) { pdfjsLib.GlobalWorkerOptions.workerSrc = "lib/pdf.worker.min.js"; pdfjsReady = true; }
+  return getFile(id).then(function (f) { return f.blob.arrayBuffer(); }).then(function (buf) {
+    return pdfjsLib.getDocument({ data: buf }).promise;
+  }).then(function (doc) {
+    var out = [], n = Math.min(doc.numPages, 4), chain = Promise.resolve();
+    for (var p = 1; p <= n; p++) (function (p) {
+      chain = chain.then(function () { return doc.getPage(p).then(function (pg) { return pg.getTextContent(); }).then(function (tc) { out.push(tc.items.map(function (i) { return i.str; }).join(" ")); }); });
+    })(p);
+    return chain.then(function () { return out.join("\n"); });
+  }).catch(function () { return ""; });
+}
+function matchPdfs(pdfRows, members, kCol, nCol, fill) {
+  var pats = members.map(function (mb, i) { var k = mb[kCol] || ""; return { i: i, k: k, re: k ? keyRe(k) : null, name: nCol ? String(mb[nCol] || "").toLowerCase().replace(/\s+/g, " ").trim() : "" }; });
+  var used = {}, rep = { matched: 0, none: 0, multi: 0 }, done = 0;
+  toast("Reading the PDFs… 0 / " + pdfRows.length, 120000);
+  return pdfRows.reduce(function (p, r) {
+    return p.then(function () {
+      return pdfText(r._file).then(function (text) {
+        done++; toast("Reading the PDFs… " + done + " / " + pdfRows.length, 120000);
+        var fname = S.files[r._file].name.replace(/\.pdf$/i, ""), flat = text.toLowerCase().replace(/\s+/g, " ");
+        var scored = [];
+        pats.forEach(function (m) {
+          if (!m.re) return;
+          var s = 0; if (m.re.test(fname)) s += 3; if (text && m.re.test(text)) s += 2;
+          if (!s) return; if (m.name && m.name.length > 2 && flat.indexOf(m.name) >= 0) s += 1;
+          scored.push([s, m.k.length, m.i]);
+        });
+        if (!scored.length) { r._note = "No member found in this PDF"; rep.none++; return; }
+        scored.sort(function (a, b) { return b[0] - a[0] || b[1] - a[1]; });
+        var top = scored.filter(function (x) { return x[0] === scored[0][0] && x[1] === scored[0][1]; });
+        if (top.length > 1) { r._note = "Several members fit — check: " + top.slice(0, 3).map(function (x) { return members[x[2]][kCol]; }).join(", "); rep.multi++; return; }
+        fill(r, members[top[0][2]]); used[top[0][2]] = 1; rep.matched++;
+      });
+    });
+  }, Promise.resolve()).then(function () {
+    var left = members.filter(function (m, i) { return !used[i]; }).length;
+    save(); renderRows();
+    toast("Matched " + rep.matched + " · not found " + rep.none + " · unclear " + rep.multi + (left ? " · " + left + " members without a PDF" : ""), 8000);
+  });
+}
+
+/* ═════════════ COMPOSE ═════════════ */
+function renderCompose() {
+  $("cSubject").value = S.compose.subject || ""; $("cBody").value = S.compose.body || "";
+  $("cCc").value = S.compose.cc || ""; $("cBcc").value = S.compose.bcc || ""; $("cReply").value = S.compose.reply_to || "";
+  var ch = $("phChips"); ch.innerHTML = "";
+  ["Email"].concat(S.columns).concat(["Date", "Files"]).forEach(function (c) {
+    ch.appendChild(el("button", { class: "chip", text: "{" + c + "}", onclick: function () { insertPh("{" + c + "}"); } }));
+  });
+  var sel = $("tplSel"); sel.innerHTML = ""; sel.appendChild(el("option", { value: "", text: "Saved templates…" }));
+  S.templates.forEach(function (t) { sel.appendChild(el("option", { value: t.name, text: t.name })); });
+}
+var lastField = "cBody";
+["cSubject", "cBody"].forEach(function (id) { $(id).addEventListener("focus", function () { lastField = id; }); });
+function insertPh(t) {
+  var f = $(lastField), s = f.selectionStart == null ? f.value.length : f.selectionStart, e = f.selectionEnd == null ? s : f.selectionEnd;
+  f.value = f.value.slice(0, s) + t + f.value.slice(e); f.focus(); f.selectionStart = f.selectionEnd = s + t.length; readCompose();
+}
+function readCompose() { S.compose = { subject: $("cSubject").value, body: $("cBody").value, cc: $("cCc").value.trim(), bcc: $("cBcc").value.trim(), reply_to: $("cReply").value.trim() }; save(); }
+["cSubject", "cBody", "cCc", "cBcc", "cReply"].forEach(function (id) { $(id).addEventListener("input", readCompose); });
+$("tplSave").addEventListener("click", function () {
+  var inp = el("input", { class: "inp", placeholder: "e.g. Monthly bill" });
+  modal("Save template", inp, [["Cancel", false], ["Save", true, "primary"]]).then(function (ok) {
+    var n = inp.value.trim(); if (!ok || !n) return;
+    readCompose(); S.templates = S.templates.filter(function (t) { return t.name !== n; }).concat([{ name: n, subject: S.compose.subject, body: S.compose.body }]);
+    lsSet("templates", S.templates); renderCompose(); toast("Template saved");
+  });
+});
+$("tplLoad").addEventListener("click", function () { var t = S.templates.filter(function (x) { return x.name === $("tplSel").value; })[0]; if (!t) return; S.compose.subject = t.subject; S.compose.body = t.body; save(); renderCompose(); });
+$("tplDel").addEventListener("click", function () { var n = $("tplSel").value; if (!n) return; S.templates = S.templates.filter(function (t) { return t.name !== n; }); lsSet("templates", S.templates); renderCompose(); });
+$("previewBtn").addEventListener("click", function () {
+  readCompose();
+  var g = buildGroups(S.rows, S.columns).groups[0];
+  if (!g) return toast("Add a row with an email address first.");
+  var subj = render(S.compose.subject, g.values), body = render(S.compose.body, g.values);
+  modal("Preview", el("div", { class: "stack small" }, el("div", null, el("b", { text: "To: " }), g.email),
+    el("div", null, el("b", { text: "Subject: " }), subj.text),
+    el("div", null, el("b", { text: "PDFs: " }), g.fileNames.join(", ") || "none"),
+    el("pre", { style: "white-space:pre-wrap;font:inherit;background:var(--surface2);padding:10px;border-radius:8px", text: body.text }),
+    (subj.missing.length || body.missing.length) ? notice("warn", "Not found in your columns: " + subj.missing.concat(body.missing).join(", ")) : null), [["Close", true, "primary"]]);
+});
+
+/* ═════════════ GROUPS & TEXT ═════════════ */
+function todayStr() { var d = new Date(); return String(d.getDate()).padStart(2, "0") + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + d.getFullYear(); }
+function render(tpl, values) {
+  var missing = [];
+  var text = String(tpl || "").replace(/\{([^{}\r\n]{1,60})\}/g, function (m, k) { var n = norm(k); if (n && values[n] != null) return values[n]; missing.push(k.trim()); return m; });
+  return { text: text, missing: missing };
+}
+function buildGroups(rows, columns) {
+  var map = {}, order = [], noEmail = [], invalid = [];
+  rows.forEach(function (r, idx) {
+    if (r._off) return;
+    var ems = splitEmails(r.Email);
+    if (!ems.length) { noEmail.push(idx); return; }
+    ems.forEach(function (e) {
+      if (!EMAIL_RE.test(e)) { invalid.push({ row: idx, value: e }); return; }
+      var k = e.toLowerCase(), g = map[k];
+      if (!g) { g = map[k] = { email: e, rows: [], files: [] }; order.push(k); }
+      g.rows.push(idx);
+      if (r._file && (S.files[r._file] || (r._inline && r._inline[r._file])) && g.files.indexOf(r._file) < 0) g.files.push(r._file);
+    });
+  });
+  var groups = order.map(function (k) {
+    var g = map[k], v = {};
+    g.fileNames = g.files.map(function (f) { return S.files[f] ? S.files[f].name : f; });
+    v.date = todayStr(); v.files = v.filename = g.fileNames.join(", "); v.count = String(g.files.length);
+    columns.forEach(function (c) { var seen = []; g.rows.forEach(function (ri) { var x = String(rows[ri][c] || "").trim(); if (x && seen.indexOf(x) < 0) seen.push(x); }); v[norm(c)] = seen.join(", "); });
+    v.email = g.email; g.values = v;
+    g.size = g.files.reduce(function (n, f) { return n + (S.files[f] ? S.files[f].size : 0); }, 0);
+    return g;
+  });
+  return { groups: groups, noEmail: noEmail, invalid: invalid };
+}
+
+/* ═════════════ GOOGLE SIGN-IN & GMAIL ═════════════ */
+/* Google sign-ins (access tokens) last about 1 hour. Kept on this device until they expire,
+   so a window opened from Solutions4Society does not ask again. */
+var TOK = {};   // email(lower) -> {token, exp}
+try { TOK = JSON.parse(localStorage.getItem("bm.tok") || "{}"); } catch (e) { TOK = {}; }
+Object.keys(TOK).forEach(function (k) { if (!TOK[k] || TOK[k].exp < Date.now()) delete TOK[k]; });
+function saveTok() { try { localStorage.setItem("bm.tok", JSON.stringify(TOK)); } catch (e) {} }
+function tokenFor(email) { var t = TOK[email.toLowerCase()]; return t && t.exp > Date.now() + 60000 ? t.token : null; }
+var gisP = null;
+function loadGis() {
+  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+  if (gisP) return gisP;
+  gisP = new Promise(function (res, rej) {
+    var s = el("script", { src: "https://accounts.google.com/gsi/client", async: "" });
+    s.onload = function () { res(); }; s.onerror = function () { gisP = null; rej(new Error("Could not load Google sign-in. Check the internet connection.")); };
+    document.head.appendChild(s);
+  });
+  return gisP;
+}
+loadGis().catch(function () {});
+/* Must be called from a tap (Google opens a popup). expected = email or null (any account). */
+function connect(expected) {
+  return loadGis().then(function () {
+    return new Promise(function (resolve, reject) {
+      var client = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID, scope: SCOPES, hint: expected || undefined, include_granted_scopes: true,
+        callback: function (resp) {
+          if (resp.error) return reject(new Error(resp.error_description || resp.error));
+          if (!google.accounts.oauth2.hasGrantedAllScopes(resp, SCOPES.split(" ")[0], SCOPES.split(" ")[1]))
+            return reject(new Error("Please tick both boxes on Google's permission screen (send email, and see email dates/recipients)."));
+          api(resp.access_token, "GET", "/gmail/v1/users/me/profile").then(function (p) {
+            if (expected && p.emailAddress.toLowerCase() !== expected.toLowerCase())
+              return reject(new Error("You signed in as " + p.emailAddress + ", but this row is " + expected + ". Choose the right account."));
+            TOK[p.emailAddress.toLowerCase()] = { token: resp.access_token, exp: Date.now() + (Number(resp.expires_in) || 3600) * 1000 };
+            saveTok(); resolve(p.emailAddress);
+          }, reject);
+        },
+        error_callback: function (err) { reject(new Error(err && err.type === "popup_closed" ? "Sign-in window was closed." : err && err.type === "popup_failed_to_open" ? "The browser blocked the Google window. Allow pop-ups for this site and tap again." : "Sign-in failed (" + (err && err.type) + ")")); }
+      });
+      client.requestAccessToken({ prompt: expected ? "" : "select_account" });
+    });
+  });
+}
+function GErr(status, body) { var e = new Error(gmailMsg(status, body)); e.status = status; e.body = body; return e; }
+function gmailMsg(status, b) {
+  var m = (b && b.error && (b.error.message || b.error.status)) || ("HTTP " + status);
+  if (status === 401) return "Sign-in expired — tap Connect again.";
+  return m;
+}
+function api(token, method, path, body, ctype) {
+  return fetch(GMAIL + path, { method: method, headers: Object.assign({ Authorization: "Bearer " + token }, ctype ? { "Content-Type": ctype } : {}), body: body })
+    .then(function (r) { return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : {}; } catch (e) { j = { raw: t }; } if (!r.ok) throw GErr(r.status, j); return j; }); },
+      function () { var e = new Error("No internet connection."); e.network = true; throw e; });
+}
+/* recipients sent from this account in the last 24 hours (reads the Sent label) */
+var USAGE = {};  // email -> {used, at, error}
+function countSent(email, maxAge) {
+  var k = email.toLowerCase(), c = USAGE[k];
+  if (c && Date.now() - c.at < (maxAge == null ? 300000 : maxAge)) return Promise.resolve(c);
+  var tok = tokenFor(email);
+  if (!tok) return Promise.resolve({ used: null, error: "not connected" });
+  var cutoff = Date.now() - 24 * 3600 * 1000, used = 0, seen = 0;
+  function page(pt) {
+    return api(tok, "GET", "/gmail/v1/users/me/messages?labelIds=SENT&maxResults=100" + (pt ? "&pageToken=" + encodeURIComponent(pt) : "")).then(function (lst) {
+      var ids = (lst.messages || []).map(function (m) { return m.id; }), old = 0, i = 0;
+      function worker() {
+        if (i >= ids.length) return Promise.resolve();
+        var id = ids[i++];
+        return api(tok, "GET", "/gmail/v1/users/me/messages/" + id + "?format=metadata&metadataHeaders=To&metadataHeaders=Cc&metadataHeaders=Bcc&fields=internalDate,payload/headers").then(function (m) {
+          if (Number(m.internalDate) < cutoff) { old++; return; }
+          var n = 0; ((m.payload && m.payload.headers) || []).forEach(function (h) { n += splitEmails(h.value).filter(function (x) { return x.indexOf("@") > 0; }).length; });
+          used += Math.max(1, n);
+        }).then(worker);
+      }
+      var ws = []; for (var w = 0; w < 8; w++) ws.push(worker());
+      return Promise.all(ws).then(function () { seen += ids.length; if (lst.nextPageToken && !old && seen < 3000) return page(lst.nextPageToken); });
+    });
+  }
+  return page(null).then(function () { var r = { used: used, at: Date.now(), error: "" }; USAGE[k] = r; return r; },
+    function (e) { var r = { used: historyCount(email), at: Date.now(), error: "Could not read the Sent folder (" + e.message + ") — counting only BulkMail's own sends." }; USAGE[k] = r; return r; });
+}
+function historyCount(email) {
+  var cutoff = Date.now() - 86400000;
+  return S.history.filter(function (h) { return h.from && h.from.toLowerCase() === email.toLowerCase() && h.status === "Sent" && h.at >= cutoff; })
+    .reduce(function (n, h) { return n + (h.n || 1); }, 0);
+}
+
+/* ───── MIME message ───── */
+function b64(bytes) { var s = "", CH = 0x8000; for (var i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH)); return btoa(s); }
+function b64utf8(str) { return b64(new TextEncoder().encode(str)); }
+function wrap76(s) { return s.replace(/(.{76})/g, "$1\r\n"); }
+function isAscii(s) { return /^[\x20-\x7e]*$/.test(s); }
+function encWord(s) {
+  if (isAscii(s)) return s;
+  var words = [], cur = "", enc = new TextEncoder();
+  Array.from(s).forEach(function (ch) { if (enc.encode(cur + ch).length > 45) { words.push(cur); cur = ""; } cur += ch; });
+  if (cur) words.push(cur);
+  return words.map(function (w) { return "=?UTF-8?B?" + b64utf8(w) + "?="; }).join("\r\n ");
+}
+function addr(name, email) { if (!name) return email; return (isAscii(name) ? '"' + name.replace(/["\\]/g, "") + '"' : encWord(name)) + " <" + email + ">"; }
+function fileParam(name) {
+  if (isAscii(name)) return 'filename="' + name.replace(/["\\]/g, "_") + '"';
+  return "filename*=UTF-8''" + encodeURIComponent(name).replace(/['()*]/g, function (c) { return "%" + c.charCodeAt(0).toString(16).toUpperCase(); });
+}
+function buildMime(o) {
+  var B = "bm_" + uid() + uid(), L = [];
+  L.push("From: " + addr(o.fromName, o.from));
+  L.push("To: " + o.to);
+  if (o.cc.length) L.push("Cc: " + o.cc.join(", "));
+  if (o.bcc.length) L.push("Bcc: " + o.bcc.join(", "));
+  if (o.replyTo.length) L.push("Reply-To: " + o.replyTo.join(", "));
+  L.push("Subject: " + encWord(o.subject));
+  L.push("MIME-Version: 1.0");
+  L.push('Content-Type: multipart/mixed; boundary="' + B + '"');
+  L.push("");
+  L.push("--" + B);
+  L.push("Content-Type: text/plain; charset=UTF-8");
+  L.push("Content-Transfer-Encoding: base64");
+  L.push("");
+  L.push(wrap76(b64utf8(o.body || " ")));
+  o.attachments.forEach(function (a) {
+    L.push("--" + B);
+    L.push('Content-Type: application/pdf; name="' + (isAscii(a.name) ? a.name.replace(/["\\]/g, "_") : "bill.pdf") + '"');
+    L.push("Content-Disposition: attachment; " + fileParam(a.name));
+    L.push("Content-Transfer-Encoding: base64");
+    L.push("");
+    L.push(wrap76(b64(a.bytes)));
+  });
+  L.push("--" + B + "--");
+  L.push("");
+  return L.join("\r\n");
+}
+function sendRaw(token, mime) {
+  return api(token, "POST", "/upload/gmail/v1/users/me/messages/send?uploadType=media", new Blob([mime], { type: "message/rfc822" }), "message/rfc822");
+}
+function limitErr(e) {
+  var t = JSON.stringify(e.body || {}) + " " + e.message;
+  return (e.status === 429 || e.status === 403 || e.status === 400) && /limit|quota|exceed/i.test(t);
+}
+
+/* ═════════════ ACCOUNTS ═════════════ */
+function accounts() { return S.cfg.accounts || []; }
+function mainEmail() { var a = accounts()[0]; return a ? a.email : ""; }
+function renderAccounts() {
+  $("replyMain").checked = S.cfg.reply_main !== false; $("defLimit").value = S.cfg.def_limit || 450; $("verLbl").textContent = "v" + APP_VERSION;
+  var box = $("accList"); box.innerHTML = "";
+  if (!accounts().length) { box.appendChild(notice("info", "No account yet. Tap “Add Gmail account” and sign in with Google (shreedeepsolutions@gmail.com first — that becomes the main account).")); }
+  accounts().forEach(function (a, i) {
+    var u = USAGE[a.email.toLowerCase()], con = !!tokenFor(a.email);
+    var lim = el("input", { class: "inp", type: "number", min: "1", max: "2000", value: a.limit, style: "width:84px;padding:5px 8px;font-size:14px" });
+    lim.addEventListener("change", function () { a.limit = Math.max(1, Math.min(2000, parseInt(this.value, 10) || 450)); this.value = a.limit; saveCfg(); renderAccounts(); });
+    var usedTxt = u && u.used != null ? u.used + " / " + a.limit + " used today · " + Math.max(0, a.limit - u.used) + " left" : con ? "tap ↻ to check use" : "not connected";
+    var pc = u && u.used != null ? Math.min(100, Math.round(100 * u.used / a.limit)) : 0;
+    box.appendChild(el("div", { class: "acc" + (a.off ? " faint" : "") },
+      el("div", null, el("div", { class: "e", text: (i + 1) + ". " + a.email + (i === 0 ? "  (main)" : "") + (a.off ? "  — off" : "") }),
+        el("div", { class: "small " + (con ? "ok-t" : "muted"), text: (con ? "● connected · " : "○ ") + usedTxt }),
+        u && u.error && u.error !== "not connected" ? el("div", { class: "hint warn-t", text: u.error }) : null,
+        u && u.used != null ? el("div", { class: "bar", style: "margin-top:5px;max-width:260px" }, el("div", { style: "width:" + pc + "%;background:" + (pc >= 100 ? "var(--bad)" : pc >= 80 ? "var(--warn)" : "var(--ok)") })) : null),
+      el("div", { class: "row", style: "justify-content:flex-end;gap:4px" },
+        el("button", { class: "btn sm " + (con ? "" : "primary"), text: con ? "Reconnect" : "Connect", onclick: function () { doConnect(a.email); } }),
+        el("span", { class: "small muted", text: "switch at" }), lim),
+      el("div", { class: "row", style: "grid-column:1/-1;gap:4px" },
+        i > 0 ? el("button", { class: "btn sm ghost", text: "↑ use earlier", onclick: function () { var L = accounts(); L.splice(i - 1, 0, L.splice(i, 1)[0]); saveCfg(); renderAccounts(); } }) : null,
+        el("button", { class: "btn sm ghost", text: a.off ? "Turn on" : "Turn off", onclick: function () { a.off = !a.off; saveCfg(); renderAccounts(); } }),
+        el("button", { class: "btn sm ghost danger", text: "Remove", onclick: function () { ask("Remove account?", "Remove " + a.email + " from BulkMail on this device? Nothing changes in Gmail.", "Remove", true).then(function (y) { if (y) { S.cfg.accounts.splice(i, 1); delete TOK[a.email.toLowerCase()]; saveTok(); saveCfg(); renderAccounts(); } }); } }))));
+  });
+  var left = accounts().reduce(function (n, a) { var u = USAGE[a.email.toLowerCase()]; return n + (!a.off && u && u.used != null && tokenFor(a.email) ? Math.max(0, a.limit - u.used) : 0); }, 0);
+  $("roomNote").textContent = Object.keys(USAGE).length ? "Room left today (connected accounts): about " + left : "";
+}
+function doConnect(email) {
+  return connect(email).then(function (got) {
+    toast("Connected: " + got); USAGE[got.toLowerCase()] = null; delete USAGE[got.toLowerCase()];
+    return countSent(got, 0).then(function () { renderAccounts(); if (S.tab === "send") refreshPlan(); return got; });
+  }, function (e) { toast(e.message, 7000); renderAccounts(); throw e; });
+}
+$("addAccBtn").addEventListener("click", function () {
+  connect(null).then(function (got) {
+    if (accounts().some(function (a) { return a.email.toLowerCase() === got.toLowerCase(); })) { toast(got + " is already in the list — now connected."); }
+    else { S.cfg.accounts.push({ email: got, limit: S.cfg.def_limit || 450 }); saveCfg(); toast("Added " + got); }
+    return countSent(got, 0);
+  }).then(renderAccounts, function (e) { toast(e.message, 7000); });
+});
+$("usageBtn").addEventListener("click", function () {
+  var b = this; b.disabled = true; $("roomNote").textContent = "Reading each Sent folder…";
+  Promise.all(accounts().filter(function (a) { return tokenFor(a.email); }).map(function (a) { return countSent(a.email, 0); })).then(function () { b.disabled = false; renderAccounts(); });
+});
+$("replyMain").addEventListener("change", function () { S.cfg.reply_main = this.checked; saveCfg(); });
+$("defLimit").addEventListener("change", function () { S.cfg.def_limit = Math.max(1, Math.min(2000, parseInt(this.value, 10) || 450)); saveCfg(); });
+$("forgetBtn").addEventListener("click", function () {
+  ask("Remove all data?", "Deletes the list, PDFs, templates, history and account list from this device.", "Remove everything", true).then(function (y) {
+    if (!y) return;
+    Object.keys(localStorage).forEach(function (k) { if (k.indexOf("bm.") === 0) localStorage.removeItem(k); });
+    indexedDB.deleteDatabase("bulkmail"); location.reload();
+  });
+});
+
+/* ═════════════ SEND ═════════════ */
+function check(type, title, sub) {
+  var ic = { ok: "✓", bad: "✕", warn: "!", info: "i" }[type];
+  return el("li", null, el("span", { class: "ic " + type + "-t", text: ic }), el("div", null, el("div", null, title), sub ? el("div", { class: "sub" }, sub) : null));
+}
+function refreshPlan() {
+  readComposeSafe();
+  $("gap").value = S.cfg.gap == null ? 2 : S.cfg.gap;
+  var ul = $("checks"); ul.innerHTML = "";
+  var p = buildGroups(S.rows, S.columns), groups = p.groups;
+  var acc = accounts().filter(function (a) { return !a.off; });
+  if (!acc.length) ul.appendChild(check("bad", "No Gmail account yet", el("a", { href: "#", text: "Add one in Accounts", onclick: function (e) { e.preventDefault(); showTab("accounts"); } })));
+  else {
+    var con = acc.filter(function (a) { return tokenFor(a.email); });
+    ul.appendChild(check(con.length ? "ok" : "bad", con.length ? "Connected: " + con.map(function (a) { return a.email; }).join(", ") : "No account connected",
+      acc.length > con.length ? el("span", null, "Not connected: " + acc.filter(function (a) { return !tokenFor(a.email); }).map(function (a) { return a.email; }).join(", ") + " — ", el("a", { href: "#", text: "connect in Accounts", onclick: function (e) { e.preventDefault(); showTab("accounts"); } })) : null));
+    var left = 0, known = true;
+    con.forEach(function (a) { var u = USAGE[a.email.toLowerCase()]; if (u && u.used != null) left += Math.max(0, a.limit - u.used); else known = false; });
+    if (con.length && groups.length) ul.appendChild(known ? check(left >= groups.length ? "ok" : "warn", left >= groups.length ? "Enough room today: about " + left + " emails left" : "Only about " + left + " emails left today on connected accounts — " + (groups.length - left) + " will wait",
+      left < groups.length ? "Connect another account, or BulkMail will stop and keep the rest for later." : null) : check("info", "Today's use will be checked when sending starts"));
+  }
+  ul.appendChild(groups.length ? check("ok", plural(groups.length, "email") + " ready, with " + plural(groups.reduce(function (n, g) { return n + g.files.length; }, 0), "PDF") + " (" + fmtSize(groups.reduce(function (n, g) { return n + g.size; }, 0)) + ")")
+    : check("bad", "Nobody to send to yet", "Add rows with email addresses in Recipients."));
+  if (p.noEmail.length) ul.appendChild(check("warn", plural(p.noEmail.length, "row") + " without email — skipped"));
+  if (p.invalid.length) ul.appendChild(check("bad", plural(p.invalid.length, "wrong address") + " — skipped", p.invalid.slice(0, 8).map(function (x) { return x.value; }).join(", ")));
+  if (!S.compose.subject.trim()) ul.appendChild(check("warn", "Subject is empty"));
+  if (!S.compose.body.trim()) ul.appendChild(check("warn", "Message is empty"));
+  var big = groups.filter(function (g) { return g.size > 24 * 1048576; });
+  if (big.length) ul.appendChild(check("bad", plural(big.length, "email") + " over Gmail's 25 MB limit", big.map(function (g) { return g.email; }).join(", ")));
+  var known2 = {}; ["email", "date", "files", "filename", "count"].concat(S.columns.map(norm)).forEach(function (k) { known2[k] = 1; });
+  var unk = []; (S.compose.subject + " " + S.compose.body).replace(/\{([^{}\r\n]{1,60})\}/g, function (m, k) { if (!known2[norm(k)] && unk.indexOf(k) < 0) unk.push(k); });
+  if (unk.length) ul.appendChild(check("warn", "Fields not in your columns: " + unk.map(function (x) { return "{" + x + "}"; }).join(", "), "They will be sent exactly as typed."));
+  var running = S.job && !S.job.done;
+  $("sendBtn").disabled = running || !groups.length || !acc.length;
+  $("sendBtn").textContent = running ? "Sending…" : groups.length ? "Start sending " + plural(groups.length, "email") : "Start sending";
+  $("testBtn").disabled = running || !acc.length;
+}
+function readComposeSafe() { if (!$("v-compose").classList.contains("hidden")) readCompose(); }
+$("recheck").addEventListener("click", refreshPlan);
+$("gap").addEventListener("change", function () { S.cfg.gap = Math.max(0, Math.min(60, parseFloat(this.value) || 0)); this.value = S.cfg.gap; saveCfg(); });
+
+/* load PDF bytes for a group (from IndexedDB or from an S4S job held in memory) */
+function groupAttachments(g, inline) {
+  return Promise.all(g.files.map(function (fid) {
+    if (inline && inline[fid]) return Promise.resolve({ name: inline[fid].name, bytes: inline[fid].bytes });
+    return getFile(fid).then(function (f) { if (!f) throw new Error("PDF missing"); return f.blob.arrayBuffer().then(function (b) { return { name: f.name, bytes: new Uint8Array(b) }; }); });
+  }));
+}
+function makeMessage(acc, g, compose, inline) {
+  var subj = render(compose.subject, g.values).text.replace(/[\r\n]+/g, " ").trim(), body = render(compose.body, g.values).text;
+  var low = g.email.toLowerCase();
+  var cc = splitEmails(compose.cc).filter(function (e) { return EMAIL_RE.test(e) && e.toLowerCase() !== low; });
+  var bcc = splitEmails(compose.bcc).filter(function (e) { return EMAIL_RE.test(e) && e.toLowerCase() !== low; });
+  var reply = splitEmails(compose.reply_to).filter(function (e) { return EMAIL_RE.test(e); });
+  if (!reply.length && S.cfg.reply_main !== false && mainEmail() && mainEmail().toLowerCase() !== acc.email.toLowerCase()) reply = [mainEmail()];
+  return groupAttachments(g, inline).then(function (att) {
+    return { mime: buildMime({ from: acc.email, fromName: acc.name || "Shreedeep Solutions", to: g.email, cc: cc, bcc: bcc, replyTo: reply, subject: subj, body: body, attachments: att }),
+      n: 1 + cc.length + bcc.length, subject: subj, cc: cc.join(", ") };
+  });
+}
+
+/* the sending job */
+function startJob(groups, compose, opts) {
+  opts = opts || {};
+  var job = { id: uid(), source: opts.source || "BulkMail", groups: groups, compose: compose, inline: opts.inline || null, onProgress: opts.onProgress || null,
+    items: groups.map(function (g) { return { email: g.email, files: g.fileNames, status: "pending", detail: "" }; }),
+    sent: 0, failed: 0, stop: false, done: false, notes: [], from: "", pause: null, gap: S.cfg.gap == null ? 2 : S.cfg.gap };
+  S.job = job; $("jobCard").classList.remove("hidden"); renderJob(); refreshPlan();
+  var pool = accounts().filter(function (a) { return !a.off; }).map(function (a) { return { email: a.email, name: a.name, limit: a.limit, used: null, full: false }; });
+  var acc = null;
+  function note(t) { job.notes.push(new Date().toLocaleTimeString() + " — " + t); renderJob(); }
+  function waitTap(email, why) {   // pause until the user taps Connect for this account (Google needs a tap)
+    return new Promise(function (resolve) { job.pause = { email: email, why: why, resolve: resolve }; renderJob(); });
+  }
+  function pick(need) {
+    var i = 0;
+    function next() {
+      if (job.stop) return Promise.resolve(null);
+      if (i >= pool.length) return Promise.resolve(null);
+      var a = pool[i++];
+      if (a.full) return next();
+      var ensure = tokenFor(a.email) ? Promise.resolve(true) : waitTap(a.email, "needs sign-in").then(function (ok) { return ok; });
+      return ensure.then(function (ok) {
+        if (!ok) { a.full = true; note("Skipped " + a.email + " (not connected)."); return next(); }
+        if (a.used != null) return a;
+        return countSent(a.email, 60000).then(function (u) {
+          a.used = u.used == null ? 0 : u.used;
+          if (u.error) note(a.email + ": " + u.error);
+          return a;
+        });
+      }).then(function (a2) {
+        if (!a2 || a2 === null) return a2;
+        if (a2.used + need <= a2.limit) return a2;
+        a2.full = true; return next();
+      });
+    }
+    return next();
+  }
+  var idx = 0;
+  function one() {
+    if (job.stop || idx >= groups.length) return Promise.resolve();
+    var g = groups[idx], it = job.items[idx];
+    it.status = "sending"; renderJob();
+    var tries = 0;
+    function attempt() {
+      if (job.stop) return Promise.resolve();
+      var need = 1 + splitEmails(compose.cc).filter(function (e) { return EMAIL_RE.test(e); }).length + splitEmails(compose.bcc).filter(function (e) { return EMAIL_RE.test(e); }).length;
+      var chooseP = (acc && !acc.full && acc.used + need <= acc.limit) ? Promise.resolve(acc) : (function () {
+        var prev = acc; if (prev) prev.full = true;
+        return pick(need).then(function (a) {
+          if (a && prev) note(prev.bad ? "Skipped " + prev.email + " (" + prev.bad + "). Switching to " + a.email + "." : prev.email + " reached its limit (" + prev.used + " / " + prev.limit + "). Switching to " + a.email + ".");
+          else if (a && !prev) note("Sending from " + a.email + " (" + a.used + " / " + a.limit + " used today).");
+          return a;
+        });
+      })();
+      return chooseP.then(function (a) {
+        if (job.stop) return;
+        if (!a) { job.fatal = "All accounts reached their limit (or are not connected). The rest were NOT sent — tap “Send again to unsent” later, or connect another account."; job.stop = true; return; }
+        acc = a; job.from = a.email; renderJob();
+        if (!tokenFor(a.email)) return waitTap(a.email, "sign-in expired").then(function (ok) { if (!ok) a.full = true; return attempt(); });
+        return makeMessage(a, g, compose, job.inline).then(function (m) {
+          tries++;
+          return sendRaw(tokenFor(a.email), m.mime).then(function () {
+            a.used += m.n; var c = USAGE[a.email.toLowerCase()]; if (c) c.used = a.used;
+            finish(it, "sent", "", a.email, m);
+          }, function (e) {
+            if (e.status === 401) { delete TOK[a.email.toLowerCase()]; saveTok(); return waitTap(a.email, "sign-in expired").then(function (ok) { if (!ok) a.full = true; return attempt(); }); }
+            if (limitErr(e)) {
+              if (/rate/i.test(JSON.stringify(e.body || "")) && !/daily|day|sending limit/i.test(JSON.stringify(e.body || "")) && tries < 3) { note(a.email + ": Gmail asked to slow down — waiting 10 s."); return sleep(10000).then(attempt); }
+              note(a.email + ": Gmail says the sending limit is reached."); a.full = true; tries = 0; return attempt();
+            }
+            if (e.network && tries < 3) { note("No internet — trying again in 5 s."); return sleep(5000).then(attempt); }
+            finish(it, "failed", e.message, a.email, null);
+          });
+        }, function (e) { finish(it, "failed", "Could not prepare: " + e.message, a.email, null); });
+      });
+    }
+    return attempt().then(function () {
+      idx++;
+      if (job.stop || idx >= groups.length) return;
+      return sleep(job.gap * 1000).then(one);
+    });
+  }
+  function finish(it, status, detail, from, m) {
+    it.status = status; it.detail = detail; it.from = from;
+    if (status === "sent") job.sent++; else job.failed++;
+    S.history.unshift({ at: Date.now(), from: from, to: it.email, cc: m ? m.cc : "", subject: m ? m.subject : "", files: it.files.join("; "), status: status === "sent" ? "Sent" : "Failed", detail: detail, n: m ? m.n : 1, src: job.source });
+    if (S.history.length > 3000) S.history.length = 3000;
+    lsSet("history", S.history); renderJob();
+  }
+  return one().catch(function (e) { job.fatal = "Unexpected error: " + e.message; }).then(function () {
+    job.items.forEach(function (it) { if (it.status === "pending" || it.status === "sending") { it.status = job.fatal ? "failed" : "stopped"; it.detail = job.fatal ? "Not sent" : "Stopped by you"; if (job.fatal) job.failed++; } });
+    job.done = true; job.pause = null; renderJob(); refreshPlan();
+    toast("Finished: " + job.sent + " sent, " + job.failed + " failed" + (job.items.some(function (x) { return x.status === "stopped"; }) ? " (stopped)" : ""), 6000);
+    return job;
+  });
+}
+function renderJob() {
+  var j = S.job; if (!j) return;
+  var total = j.items.length, done = j.items.filter(function (x) { return x.status !== "pending" && x.status !== "sending"; }).length;
+  $("jobBar").style.width = (total ? Math.round(100 * done / total) : 0) + "%";
+  $("jTotal").textContent = total; $("jSent").textContent = j.sent; $("jFailed").textContent = j.failed; $("jFrom").textContent = j.from || "–";
+  $("jobTitle").textContent = j.done ? (j.items.some(function (x) { return x.status === "stopped"; }) ? "Stopped" : "Finished") : j.stop ? "Stopping…" : "Sending " + Math.min(done + 1, total) + " of " + total + "…";
+  $("stopBtn").classList.toggle("hidden", j.done);
+  var unsent = j.items.filter(function (x) { return x.status === "failed" || x.status === "stopped"; });
+  $("retryBtn").classList.toggle("hidden", !j.done || !unsent.length); $("retryBtn").textContent = "Send again to " + plural(unsent.length, "unsent");
+  var pz = $("jobPause"); pz.innerHTML = "";
+  if (j.pause) {
+    var p = j.pause;
+    pz.appendChild(el("div", { class: "pause" }, el("div", { style: "font-weight:600;margin-bottom:8px", text: "Paused — " + p.email + " " + p.why + "." }),
+      el("div", { class: "small muted", style: "margin-bottom:8px", text: "Google needs a tap to sign in. Tap below; sending continues by itself." }),
+      el("div", { class: "row" },
+        el("button", { class: "btn primary", text: "Connect " + p.email + " & continue", onclick: function () {
+          connect(p.email).then(function () { j.pause = null; p.resolve(true); }, function (e) { toast(e.message, 7000); });
+        } }),
+        el("button", { class: "btn", text: "Skip this account", onclick: function () { j.pause = null; p.resolve(false); } }))));
+  }
+  var nz = $("jobNotes"); nz.innerHTML = "";
+  j.notes.slice(-6).forEach(function (t) { nz.appendChild(el("div", { style: "margin-bottom:6px" }, notice(/Could not|No internet|slow down|says the sending limit/.test(t) ? "warn" : "info", t))); });
+  if (j.fatal) nz.appendChild(el("div", { style: "margin-bottom:6px" }, notice("bad", j.fatal)));
+  var many = j.items.some(function (x) { return x.from && x.from !== j.items[0].from; });
+  var L = $("jobList"), atBottom = L.scrollTop + L.clientHeight >= L.scrollHeight - 30; L.innerHTML = "";
+  var lab = { pending: "Waiting", sending: "Sending…", sent: "Sent", failed: "Failed", stopped: "Not sent" }, cls = { sent: "ok-t", failed: "bad-t", stopped: "warn-t", sending: "info-t" };
+  j.items.forEach(function (it, i) {
+    L.appendChild(el("div", null, el("span", { class: "st " + (cls[it.status] || "faint"), text: lab[it.status] }),
+      el("span", { style: "flex:1;min-width:0;word-break:break-all" }, it.email, el("span", { class: "faint small", text: (it.detail ? " — " + it.detail : many && it.from && it.status === "sent" ? " — from " + it.from : "") }))));
+  });
+  if (!j.done && atBottom) { var cur = L.querySelector(".info-t"); if (cur) cur.parentNode.scrollIntoView({ block: "nearest" }); }
+  if (j.onProgress) j.onProgress(j);
+}
+$("stopBtn").addEventListener("click", function () { if (S.job) { S.job.stop = true; if (S.job.pause) { var p = S.job.pause; S.job.pause = null; p.resolve(false); } renderJob(); } });
+$("retryBtn").addEventListener("click", function () {
+  var j = S.job; if (!j) return;
+  var keep = {}; j.items.forEach(function (it) { if (it.status === "failed" || it.status === "stopped") keep[it.email.toLowerCase()] = 1; });
+  var gs = j.groups.filter(function (g) { return keep[g.email.toLowerCase()]; });
+  ask("Send again?", "Try again for " + plural(gs.length, "address") + " that did not get the email?", "Send again").then(function (y) { if (y) startJob(gs, j.compose, { source: j.source, inline: j.inline, onProgress: j.onProgress }); });
+});
+$("sendBtn").addEventListener("click", function () {
+  readComposeSafe();
+  var p = buildGroups(S.rows, S.columns);
+  if (!p.groups.length) return;
+  var first = accounts().filter(function (a) { return !a.off; })[0];
+  ask("Start sending?", "Send " + plural(p.groups.length, "email") + " from " + (first ? first.email : "?") + (accounts().length > 1 ? " (then the next accounts when its limit is near)" : "") + "?", "Send " + plural(p.groups.length, "email")).then(function (y) {
+    if (y) startJob(p.groups, JSON.parse(JSON.stringify(S.compose)));
+  });
+});
+$("testBtn").addEventListener("click", function () {
+  readComposeSafe();
+  var a = accounts().filter(function (x) { return !x.off && tokenFor(x.email); })[0];
+  if (!a) return toast("Connect an account first (Accounts).");
+  var p = buildGroups(S.rows, S.columns), g = p.groups[0] ? Object.assign({}, p.groups[0]) : { email: a.email, files: [], fileNames: [], values: { email: a.email, date: todayStr() }, size: 0 };
+  g = Object.assign({}, g, { email: a.email });
+  var c = Object.assign({}, S.compose, { cc: "", bcc: "" }); c.subject = "[TEST] " + (c.subject || "BulkMail Pro test");
+  if (!c.body) c.body = "This is a test email from BulkMail Pro.";
+  var b = this; b.disabled = true;
+  makeMessage(a, g, c, null).then(function (m) { return sendRaw(tokenFor(a.email), m.mime); }).then(function () { toast("Test email sent to " + a.email + (p.groups[0] ? " (shows the email for " + p.groups[0].email + ")" : ""), 6000); },
+    function (e) { toast("Test failed: " + e.message, 8000); }).then(function () { b.disabled = false; });
+});
+
+/* ═════════════ HISTORY ═════════════ */
+function renderHistory() {
+  var L = $("histList"); L.innerHTML = "";
+  if (!S.history.length) { L.appendChild(el("div", { class: "muted", text: "Nothing sent yet from this device." })); return; }
+  S.history.slice(0, 500).forEach(function (h) {
+    var d = new Date(h.at);
+    L.appendChild(el("div", null, el("span", { class: "st " + (h.status === "Sent" ? "ok-t" : "bad-t"), text: h.status }),
+      el("span", { style: "flex:1;min-width:0;word-break:break-all" }, h.to, el("div", { class: "faint small", text: d.toLocaleDateString() + " " + d.toLocaleTimeString() + " · from " + h.from + (h.subject ? " · " + h.subject : "") + (h.detail ? " · " + h.detail : "") }))));
+  });
+}
+$("histExport").addEventListener("click", function () {
+  var rows = S.history.map(function (h) { var d = new Date(h.at); return { Date: d.toLocaleDateString("en-GB"), Time: d.toLocaleTimeString("en-GB"), From: h.from, To: h.to, CC: h.cc, Subject: h.subject, Attachments: h.files, Status: h.status, Details: h.detail, Source: h.src }; });
+  var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "History"); XLSX.writeFile(wb, "BulkMail_history.xlsx");
+});
+$("histClear").addEventListener("click", function () { ask("Clear history?", "Only the list on this device is cleared. (Today's limit is read from Gmail, so it is not affected.)", "Clear", true).then(function (y) { if (y) { S.history = []; lsSet("history", []); renderHistory(); } }); });
+
+/* ═════════════ BILLS FROM SOLUTIONS4SOCIETY ═════════════
+   S4S opens this page (window.open) and posts the bills here. Nothing is sent until you press Start.
+   S4S → {type:"bulkmail-job", job:{society, items:[{email,name,flat,subject,text,files:[{name, pdf: base64 | ArrayBuffer}]}], cc, reply_to}}
+   We → opener: {type:"bulkmail-ready"} then {type:"bulkmail-progress", total, sent, failed, done, items:[{email,status,detail}]} */
+function fromB64(s) { var bin = atob(String(s).split(",").pop()), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+function receiveS4S(job, source, origin) {
+  var inline = {}, rows = [], cols = ["Recipient Name", "Flat/Unit No.", "Subject Line", "Message Text"];
+  (job.items || []).forEach(function (it) {
+    var r = { Email: String(it.email || ""), "Recipient Name": String(it.name || ""), "Flat/Unit No.": String(it.flat || ""), "Subject Line": String(it.subject || ""), "Message Text": String(it.text || "") };
+    (it.files || (it.pdf ? [{ name: it.filename || "bill.pdf", pdf: it.pdf }] : [])).slice(0, 5).forEach(function (f, k) {
+      var bytes = f.pdf instanceof ArrayBuffer ? new Uint8Array(f.pdf) : f.pdf instanceof Uint8Array ? f.pdf : fromB64(f.pdf || "");
+      var head = String.fromCharCode.apply(null, bytes.subarray(0, 5));
+      if (head !== "%PDF-") return;
+      var fid = "s4s_" + uid(); inline[fid] = { name: String(f.name || "bill.pdf").replace(/[\\/:*?"<>|]/g, "_"), bytes: bytes };
+      if (k === 0) r._file = fid; else rows.push(Object.assign({}, r, { _file: fid }));
+    });
+    rows.push(r);
+  });
+  // let buildGroups see the in-memory PDFs
+  Object.keys(inline).forEach(function (fid) { S.files[fid] = { name: inline[fid].name, size: inline[fid].bytes.length, inline: true }; });
+  var g = buildGroups(rows, cols);
+  var compose = { subject: "{Subject Line}", body: "{Message Text}", cc: String(job.cc || ""), bcc: "", reply_to: String(job.reply_to || "") };
+  S.s4s = { groups: g.groups, compose: compose, inline: inline, source: source, origin: origin, skipped: g.noEmail.length + g.invalid.length, society: String(job.society || "") };
+  showTab("send"); renderS4S();
+}
+function renderS4S() {
+  var x = S.s4s, c = $("s4sCard"), b = $("s4sBody");
+  $("planCard").classList.toggle("hidden", !!x); $("goCard").classList.toggle("hidden", !!x);
+  if (!x) { c.classList.add("hidden"); return; }
+  c.classList.remove("hidden"); b.innerHTML = "";
+  var con = accounts().filter(function (a) { return !a.off && tokenFor(a.email); });
+  if (!accounts().length) b.appendChild(el("div", { style: "margin-bottom:10px" }, notice("bad", "No Gmail account on this device yet — open Accounts and add one first.")));
+  else if (!con.length) b.appendChild(el("div", { style: "margin-bottom:10px" }, notice("info", "You'll be asked to sign in to " + accounts()[0].email + " with Google when sending starts.")));
+  b.appendChild(el("div", { class: "stack" },
+    el("div", null, el("b", { text: plural(x.groups.length, "email") }), x.society ? " for " + x.society : "", " ready, with ", plural(Object.keys(x.inline).length, "PDF"), x.skipped ? " · " + x.skipped + " without a valid email (skipped)" : ""),
+    el("div", { class: "small muted", text: "Each member gets their own bill. Your Recipients list is not changed. Nothing is sent until you press the button." }),
+    el("button", { class: "btn primary big", text: "Send " + plural(x.groups.length, "bill") + " now", onclick: function () {
+      this.disabled = true;
+      startJob(x.groups, x.compose, { source: "Solutions4Society", inline: x.inline, onProgress: function (j) {
+        try { x.source.postMessage({ type: "bulkmail-progress", total: j.items.length, sent: j.sent, failed: j.failed, done: j.done, items: j.items.map(function (i) { return { email: i.email, status: i.status, detail: i.detail }; }) }, x.origin); } catch (e) {}
+      } });
+    } }),
+    el("button", { class: "btn ghost", text: "Discard", onclick: function () { S.s4s = null; renderS4S(); } })));
+}
+window.addEventListener("message", function (e) {
+  if (S4S_ORIGINS.indexOf(e.origin) < 0) return;
+  var d = e.data || {};
+  if (d.type === "bulkmail-job" && d.job) receiveS4S(d.job, e.source, e.origin);
+  if (d.type === "bulkmail-ping") { try { e.source.postMessage({ type: "bulkmail-ready", version: APP_VERSION }, e.origin); } catch (x) {} }
+});
+if (window.opener) { S4S_ORIGINS.forEach(function (o) { try { window.opener.postMessage({ type: "bulkmail-ready", version: APP_VERSION }, o); } catch (x) {} }); }
+
+/* ═════════════ start ═════════════ */
+function setTheme(t) { document.documentElement.setAttribute("data-theme", t); try { localStorage.setItem("bm.theme", t); } catch (e) {} }
+try { setTheme(localStorage.getItem("bm.theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")); } catch (e) {}
+$("themeBtn").addEventListener("click", function () { setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"); });
+var deferredInstall = null;
+window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferredInstall = e; $("installBtn").classList.remove("hidden"); });
+$("installBtn").classList.add("hidden");
+$("installBtn").addEventListener("click", function () { if (deferredInstall) { deferredInstall.prompt(); deferredInstall = null; this.classList.add("hidden"); } });
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {});
+listFiles().then(function (all) {
+  all.forEach(function (f) { S.files[f.id] = { name: f.name, size: f.size }; });
+  // tidy: PDFs no row uses
+  var used = {}; S.rows.forEach(function (r) { if (r._file) used[r._file] = 1; });
+  var orphan = all.filter(function (f) { return !used[f.id]; }).map(function (f) { return f.id; });
+  if (orphan.length) delFiles(orphan);
+}).catch(function () { toast("This browser can't store PDFs (private mode?)."); }).then(function () {
+  S.rows.forEach(function (r) { if (!r._id) r._id = uid(); });
+  if (S.s4s || location.hash === "#s4s") showTab("send");
+  else showTab(accounts().length ? "recipients" : "accounts");
+  // refresh usage for connected accounts in the background
+  accounts().forEach(function (a) { if (tokenFor(a.email)) countSent(a.email).then(function () { if (S.tab === "accounts") renderAccounts(); }); });
+});
+window.BM_TEST = { S: S, TOK: TOK, USAGE: USAGE, buildMime: buildMime, countSent: countSent };
+})();
+</script>
+</body>
+</html>
