@@ -1,6 +1,6 @@
 /* BulkMail Pro web — keeps the app on the phone so it opens instantly.
    Google sign-in and Gmail calls always go to the network (never cached). */
-const VERSION = "bmweb-1.0.1";
+const VERSION = "bmweb-1.0.2";
 const CORE = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png",
   "xlsx.full.min.js", "pdf-lib.min.js", "pdf.min.js", "pdf.worker.min.js"];
 
